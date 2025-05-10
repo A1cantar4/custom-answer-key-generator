@@ -11,7 +11,7 @@ import webbrowser
 import requests
 import subprocess
 
-VERSAO_ATUAL = "1.1.3"
+VERSAO_ATUAL = "1.2.1"
 GITHUB_RAW_VERSAO_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/main/versao.txt"
 GITHUB_RAW_SCRIPT_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/main/app.py"
 
