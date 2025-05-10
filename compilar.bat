@@ -15,7 +15,7 @@ pyinstaller ^
  --noconfirm ^
  --onefile ^
  --windowed ^
- --icon=%ICON% ^
+ --icon=icon.ico ^
  --add-data "icon.ico;." ^
  --add-data "background.png;." ^
  --name %NOME_EXECUTAVEL% ^
