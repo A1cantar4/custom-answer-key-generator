@@ -11,7 +11,7 @@ import webbrowser
 import requests
 import subprocess
 
-VERSAO_ATUAL = "1.2.1"
+VERSAO_ATUAL = "1.2.4"
 GITHUB_RAW_VERSAO_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/main/versao.txt"
 GITHUB_RAW_SCRIPT_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/main/app.py"
 
@@ -36,11 +36,13 @@ def salvar_configuracoes(config):
 config = carregar_configuracoes()
 
 # ======================== GABARITO ========================
-def gerar_gabarito_simples(qtd=40, min_pct=22, max_pct=28):
-    for _ in range(1000):
+def gerar_gabarito_simples(qtd=40, letras=None, min_pct=20, max_pct=30):
+    if letras is None:
         letras = ['A', 'B', 'C', 'D']
-        random.shuffle(letras)
-        percentuais = [random.randint(min_pct, max_pct) for _ in range(3)]
+    for _ in range(1000):
+        letras_embaralhadas = letras[:]
+        random.shuffle(letras_embaralhadas)
+        percentuais = [random.randint(min_pct, max_pct) for _ in range(len(letras) - 1)]
         restante = 100 - sum(percentuais)
         if min_pct <= restante <= max_pct:
             percentuais.append(restante)
@@ -50,7 +52,7 @@ def gerar_gabarito_simples(qtd=40, min_pct=22, max_pct=28):
             while sum(quantidades) > qtd:
                 quantidades[quantidades.index(max(quantidades))] -= 1
             gabarito = []
-            for letra, quantidade in zip(letras, quantidades):
+            for letra, quantidade in zip(letras_embaralhadas, quantidades):
                 gabarito.extend([letra] * quantidade)
             random.shuffle(gabarito)
             if not tem_repeticoes_excessivas(gabarito):
@@ -69,9 +71,9 @@ def tem_repeticoes_excessivas(lista, max_reps=2):
     return False
 
 # ======================== SALVAMENTO ========================
-def salvar_gabarito(caminho, apenas_gabarito=False, assunto="", banca="", qtd_questoes=40):
+def salvar_gabarito(caminho, apenas_gabarito=False, assunto="", banca="", qtd_questoes=40, letras=None):
     try:
-        gabarito = gerar_gabarito_simples(qtd=qtd_questoes)
+        gabarito = gerar_gabarito_simples(qtd=qtd_questoes, letras=letras)
         if apenas_gabarito:
             texto = '\n'.join([f"{i+1}. {letra}" for i, letra in enumerate(gabarito)])
             with open(os.path.join(os.path.dirname(caminho), "apenas_gabarito.txt"), "w") as f:
@@ -81,7 +83,7 @@ def salvar_gabarito(caminho, apenas_gabarito=False, assunto="", banca="", qtd_qu
                 f"Gere 5 questões objetivas sobre \"{assunto}\", difíceis e bem elaboradas, no estilo da banca \"{banca}\", "
                 "seguindo o seguinte formato:\n\n"
                 "- Enunciado claro e realista, apenas diga o gabarito quando solicitado\n"
-                "- Quatro alternativas (A, B, C, D)\n"
+                f"- {len(letras)} alternativas ({', '.join(letras)})\n"
                 "- Apenas uma correta\n"
                 "- **A posição correta deve seguir, em ordem, a sequência de letras fornecida abaixo**\n"
                 "- **Use essa sequência apenas para estruturar as questões**\n"
@@ -89,7 +91,7 @@ def salvar_gabarito(caminho, apenas_gabarito=False, assunto="", banca="", qtd_qu
                 "Sequência de gabarito:\n"
                 f"{''.join(gabarito)}\n"
             )
-            with open(caminho, "w") as f:
+            with open(caminho, "w", encoding="utf-8") as f:
                 f.write(instrucao)
     except Exception as e:
         registrar_erro(e)
@@ -118,6 +120,8 @@ def verificar_e_atualizar():
                         messagebox.showinfo("Atualizado", "Aplicativo atualizado. Reiniciando...")
                         subprocess.Popen([sys.executable, caminho_atual])
                         sys.exit()
+            else:
+                messagebox.showinfo("Atualização", "Programa na versão recente!")
     except Exception as e:
         registrar_erro(e)
 
@@ -133,6 +137,12 @@ def salvar():
     entry_assunto.config(bg="white")
     entry_banca.config(bg="white")
 
+    if var_alternativas.get() not in ("4", "5"):
+        messagebox.showwarning("Atenção", "Escolha entre 4 ou 5 alternativas antes de continuar.")
+        return
+
+    letras = ['A', 'B', 'C', 'D'] if var_alternativas.get() == "4" else ['A', 'B', 'C', 'D', 'E']
+
     pasta = config.get("pasta_salvamento", os.getcwd()) if var_mesma_pasta.get() else filedialog.askdirectory()
     if not pasta:
         return
@@ -147,7 +157,8 @@ def salvar():
         apenas_gabarito=False,
         assunto=assunto,
         banca=banca,
-        qtd_questoes=int(spin_qtd.get())
+        qtd_questoes=int(spin_qtd.get()),
+        letras=letras
     )
 
     if var_apenas_gabarito.get():
@@ -156,7 +167,8 @@ def salvar():
             apenas_gabarito=True,
             assunto=assunto,
             banca=banca,
-            qtd_questoes=int(spin_qtd.get())
+            qtd_questoes=int(spin_qtd.get()),
+            letras=letras
         )
 
     if var_abrir_apos_salvar.get():
@@ -166,59 +178,72 @@ def salvar():
 
 # ======================== JANELA ========================
 root = ttk.Window(themename="flatly")
-root.title("GeradorDeGabaritosPersonalizados")
-root.geometry("420x420")
+root.title("Gerador de Gabaritos Personalizados")
+root.geometry("700x580")
 root.resizable(False, False)
 
-# Ícone e background
+# Ícone
 try:
     root.iconbitmap("icon.ico")
 except:
     pass
 
-background_image = None
+# Fundo com imagem redimensionada
 try:
-    bg_image = Image.open("background.png")
-    background_image = ImageTk.PhotoImage(bg_image.resize((420, 420)))
+    bg_image = Image.open("background.png").resize((700, 580))
+    background_image = ImageTk.PhotoImage(bg_image)
     bg_label = ttk.Label(root, image=background_image)
     bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-    bg_label.lower()  # Garante que fique no fundo
 except:
-    pass
+    background_image = None
 
-frame = ttk.Frame(root, padding=10)
-frame.place(x=0, y=0, relwidth=1, relheight=1)
+# Estilo do frame com fundo claro
+style = ttk.Style()
+style.configure("Glass.TFrame", background="#f0f0f0")
 
+frame = ttk.Frame(root, padding=20, style="Glass.TFrame")
+frame.pack(padx=40, pady=30, fill="both", expand=True)
+
+# Variáveis
 var_nome_personalizado = ttk.BooleanVar(value=config.get("nome_personalizado", True))
 var_apenas_gabarito = ttk.BooleanVar()
 var_mesma_pasta = ttk.BooleanVar()
 var_abrir_apos_salvar = ttk.BooleanVar()
+var_alternativas = ttk.StringVar()
 
 # Widgets
-widgets = [
-    (ttk.Label(frame, text="Assunto:"), 0, 0, 'e'),
-    (ttk.Entry(frame, width=35), 0, 1, 'w', 2),
-    (ttk.Label(frame, text="Banca examinadora:"), 1, 0, 'e'),
-    (ttk.Entry(frame, width=35), 1, 1, 'w', 2),
-    (ttk.Label(frame, text="Quantidade de questões:"), 2, 0, 'e'),
-    (ttk.Spinbox(frame, from_=10, to=200, width=5), 2, 1, 'w'),
-    (ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=var_nome_personalizado), 3, 0, 'w', 2),
-    (ttk.Checkbutton(frame, text="Salvar outro arquivo com apenas o gabarito", variable=var_apenas_gabarito), 4, 0, 'w', 2),
-    (ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=var_mesma_pasta), 5, 0, 'w', 2),
-    (ttk.Checkbutton(frame, text="Abrir pasta após salvar", variable=var_abrir_apos_salvar), 6, 0, 'w', 2)
-]
+ttk.Label(frame, text="Assunto:").grid(row=0, column=0, sticky="e", pady=6)
+entry_assunto = ttk.Entry(frame, width=40)
+entry_assunto.grid(row=0, column=1, pady=6)
 
-for widget, r, c, sticky, colspan in map(lambda x: (*x, 1) if len(x) == 4 else x, widgets):
-    widget.grid(row=r, column=c, columnspan=colspan, sticky=sticky, pady=2)
+ttk.Label(frame, text="Banca examinadora:").grid(row=1, column=0, sticky="e", pady=6)
+entry_banca = ttk.Entry(frame, width=40)
+entry_banca.grid(row=1, column=1, pady=6)
 
-entry_assunto = widgets[1][0]
-entry_banca = widgets[3][0]
-spin_qtd = widgets[5][0]
+ttk.Label(frame, text="Quantidade de questões:").grid(row=2, column=0, sticky="e", pady=6)
+spin_qtd = ttk.Spinbox(frame, from_=10, to=200, width=8)
+spin_qtd.grid(row=2, column=1, sticky="w", pady=6)
 
-# Rodapé
-versao_label = ttk.Label(root, text=f"Versão {VERSAO_ATUAL}", anchor='se')
-versao_label.pack(side='left', fill='x', padx=5, pady=5)
-ttk.Button(root, text="Salvar Gabarito", command=salvar).pack(side="right", padx=10, pady=10)
+# Alternativas (radio)
+ttk.Label(frame, text="Número de alternativas:").grid(row=3, column=0, sticky="e", pady=6)
+radio_frame = ttk.Frame(frame)
+radio_frame.grid(row=3, column=1, sticky="w")
+ttk.Radiobutton(radio_frame, text="4 (A-D)", variable=var_alternativas, value="4").pack(side="left", padx=5)
+ttk.Radiobutton(radio_frame, text="5 (A-E)", variable=var_alternativas, value="5").pack(side="left", padx=5)
+
+# Checkbuttons
+ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=var_nome_personalizado).grid(row=4, column=0, columnspan=2, sticky="w", pady=2)
+ttk.Checkbutton(frame, text="Salvar outro arquivo com apenas o gabarito", variable=var_apenas_gabarito).grid(row=5, column=0, columnspan=2, sticky="w", pady=2)
+ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=var_mesma_pasta).grid(row=6, column=0, columnspan=2, sticky="w", pady=2)
+ttk.Checkbutton(frame, text="Abrir pasta após salvar", variable=var_abrir_apos_salvar).grid(row=7, column=0, columnspan=2, sticky="w", pady=2)
+
+# Botões
+ttk.Button(frame, text="Salvar Gabarito", command=salvar).grid(row=8, column=0, columnspan=2, pady=10)
+ttk.Button(frame, text="Verificar atualização", command=verificar_e_atualizar).grid(row=9, column=0, columnspan=2, pady=5)
+
+# Rodapé com versão
+versao_label = ttk.Label(root, text=f"Versão {VERSAO_ATUAL}", background="#f0f0f0")
+versao_label.pack(side="bottom", anchor="w", padx=10, pady=5)
 
 verificar_e_atualizar()
 root.mainloop()
