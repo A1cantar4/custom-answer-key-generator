@@ -159,4 +159,9 @@ btn_salvar_outro.grid(row=5, column=0, padx=5, pady=10)
 btn_salvar_atual = tk.Button(frame, text="Salvar na pasta atual", font=font_style, command=salvar_pasta_atual)
 btn_salvar_atual.grid(row=5, column=1, padx=5, pady=10)
 
+VERSAO_ATUAL = "1.0.0"
+
+label_versao = tk.Label(root, text=f"Versão {VERSAO_ATUAL}", font=("Helvetica", 9), anchor='e')
+label_versao.pack(side="bottom", fill="x", padx=10, pady=(0, 5))
+
 root.mainloop()
