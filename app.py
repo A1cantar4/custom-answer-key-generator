@@ -1,5 +1,6 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import random
 import os
@@ -15,7 +16,6 @@ GITHUB_RAW_VERSAO_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-
 GITHUB_RAW_SCRIPT_URL = "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/main/app.py"
 
 SETTINGS_PATH = os.path.join(os.path.expanduser("~"), ".gabarito_settings.json")
-
 
 def carregar_configuracoes():
     if os.path.exists(SETTINGS_PATH):
@@ -130,8 +130,8 @@ def salvar():
         entry_banca.config(bg="#ffcccc")
         return
 
-    entry_assunto.config(bg="white" if not modo_escuro.get() else "#333333")
-    entry_banca.config(bg="white" if not modo_escuro.get() else "#333333")
+    entry_assunto.config(bg="white")
+    entry_banca.config(bg="white")
 
     pasta = config.get("pasta_salvamento", os.getcwd()) if var_mesma_pasta.get() else filedialog.askdirectory()
     if not pasta:
@@ -140,43 +140,34 @@ def salvar():
     config["pasta_salvamento"] = pasta
     salvar_configuracoes(config)
 
-    nome = assunto if var_nome_personalizado.get() else "gabarito.txt"
+    nome = f"{assunto}_{banca}" if var_nome_personalizado.get() else "gabarito"
     caminho = os.path.join(pasta, nome if nome.endswith(".txt") else f"{nome}.txt")
     salvar_gabarito(
         caminho,
-        apenas_gabarito=var_apenas_gabarito.get(),
+        apenas_gabarito=False,
         assunto=assunto,
         banca=banca,
         qtd_questoes=int(spin_qtd.get())
     )
+
+    if var_apenas_gabarito.get():
+        salvar_gabarito(
+            os.path.join(pasta, "apenas_gabarito.txt"),
+            apenas_gabarito=True,
+            assunto=assunto,
+            banca=banca,
+            qtd_questoes=int(spin_qtd.get())
+        )
 
     if var_abrir_apos_salvar.get():
         webbrowser.open(pasta)
 
     messagebox.showinfo("Sucesso", f"Gabarito salvo em:\n{caminho}")
 
-def alternar_tema():
-    tema = "dark" if modo_escuro.get() else "light"
-    aplicar_tema(tema)
-    config["tema"] = tema
-    salvar_configuracoes(config)
-
-def aplicar_tema(tema):
-    bg = "#333333" if tema == "dark" else "#ffffff"
-    fg = "#ffffff" if tema == "dark" else "#000000"
-    root.configure(bg=bg)
-    frame.configure(bg=bg)
-    for widget in frame.winfo_children():
-        if isinstance(widget, (tk.Label, tk.Checkbutton, tk.Button)):
-            widget.configure(bg=bg, fg=fg)
-        elif isinstance(widget, tk.Entry):
-            widget.configure(bg="#555555" if tema == "dark" else "white", fg=fg)
-    versao_label.configure(bg="#dddddd", fg="#000000")
-
 # ======================== JANELA ========================
-root = tk.Tk()
+root = ttk.Window(themename="flatly")
 root.title("GeradorDeGabaritosPersonalizados")
-root.geometry("460x500")
+root.geometry("420x420")
 root.resizable(False, False)
 
 # Ícone e background
@@ -188,34 +179,33 @@ except:
 background_image = None
 try:
     bg_image = Image.open("background.png")
-    background_image = ImageTk.PhotoImage(bg_image.resize((460, 500)))
-    bg_label = tk.Label(root, image=background_image)
+    background_image = ImageTk.PhotoImage(bg_image.resize((420, 420)))
+    bg_label = ttk.Label(root, image=background_image)
     bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+    bg_label.lower()  # Garante que fique no fundo
 except:
     pass
 
-frame = tk.Frame(root, padx=10, pady=10, bg="#ffffff")
-frame.place(x=0, y=0, relwidth=1, relheight=0.9)
+frame = ttk.Frame(root, padding=10)
+frame.place(x=0, y=0, relwidth=1, relheight=1)
 
-modo_escuro = tk.BooleanVar(value=config.get("tema") == "dark")
-var_nome_personalizado = tk.BooleanVar(value=config.get("nome_personalizado", True))
-var_apenas_gabarito = tk.BooleanVar()
-var_mesma_pasta = tk.BooleanVar()
-var_abrir_apos_salvar = tk.BooleanVar()
+var_nome_personalizado = ttk.BooleanVar(value=config.get("nome_personalizado", True))
+var_apenas_gabarito = ttk.BooleanVar()
+var_mesma_pasta = ttk.BooleanVar()
+var_abrir_apos_salvar = ttk.BooleanVar()
 
 # Widgets
 widgets = [
-    (tk.Label(frame, text="Assunto:"), 0, 0, 'e'),
-    (tk.Entry(frame, width=35), 0, 1, 'w', 2),
-    (tk.Label(frame, text="Banca examinadora:"), 1, 0, 'e'),
-    (tk.Entry(frame, width=35), 1, 1, 'w', 2),
-    (tk.Label(frame, text="Quantidade de questões:"), 2, 0, 'e'),
-    (tk.Spinbox(frame, from_=10, to=200, width=5), 2, 1, 'w'),
-    (tk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=var_nome_personalizado), 3, 0, 'w', 2),
-    (tk.Checkbutton(frame, text="Salvar outro arquivo com apenas o gabarito", variable=var_apenas_gabarito), 4, 0, 'w', 2),
-    (tk.Checkbutton(frame, text="Salvar na mesma pasta", variable=var_mesma_pasta), 5, 0, 'w', 2),
-    (tk.Checkbutton(frame, text="Abrir pasta após salvar", variable=var_abrir_apos_salvar), 6, 0, 'w', 2),
-    (tk.Checkbutton(frame, text="Modo Escuro", variable=modo_escuro, command=alternar_tema), 7, 0, 'w', 2)
+    (ttk.Label(frame, text="Assunto:"), 0, 0, 'e'),
+    (ttk.Entry(frame, width=35), 0, 1, 'w', 2),
+    (ttk.Label(frame, text="Banca examinadora:"), 1, 0, 'e'),
+    (ttk.Entry(frame, width=35), 1, 1, 'w', 2),
+    (ttk.Label(frame, text="Quantidade de questões:"), 2, 0, 'e'),
+    (ttk.Spinbox(frame, from_=10, to=200, width=5), 2, 1, 'w'),
+    (ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=var_nome_personalizado), 3, 0, 'w', 2),
+    (ttk.Checkbutton(frame, text="Salvar outro arquivo com apenas o gabarito", variable=var_apenas_gabarito), 4, 0, 'w', 2),
+    (ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=var_mesma_pasta), 5, 0, 'w', 2),
+    (ttk.Checkbutton(frame, text="Abrir pasta após salvar", variable=var_abrir_apos_salvar), 6, 0, 'w', 2)
 ]
 
 for widget, r, c, sticky, colspan in map(lambda x: (*x, 1) if len(x) == 4 else x, widgets):
@@ -226,10 +216,9 @@ entry_banca = widgets[3][0]
 spin_qtd = widgets[5][0]
 
 # Rodapé
-versao_label = tk.Label(root, text=f"Versão {VERSAO_ATUAL}", anchor='se', bg="#dddddd")
+versao_label = ttk.Label(root, text=f"Versão {VERSAO_ATUAL}", anchor='se')
 versao_label.pack(side='left', fill='x', padx=5, pady=5)
-tk.Button(root, text="Salvar Gabarito", command=salvar).pack(side="right", padx=10, pady=10)
+ttk.Button(root, text="Salvar Gabarito", command=salvar).pack(side="right", padx=10, pady=10)
 
-aplicar_tema("dark" if modo_escuro.get() else "light")
 verificar_e_atualizar()
 root.mainloop()
