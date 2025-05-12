@@ -1,6 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
+from core.updater import VERSAO_ATUAL
 from PIL import Image, ImageTk
 import os
 import sys
@@ -83,7 +84,7 @@ class GabaritoApp:
         ttk.Button(frame, text="Salvar Gabarito", command=self.salvar).grid(row=8, column=0, columnspan=2, pady=10)
         ttk.Button(frame, text="Verificar atualização", command=lambda: verificar_e_atualizar(mostrar_mensagem=True)).grid(row=9, column=0, columnspan=2, pady=5)
 
-        versao_label = ttk.Label(self.root, text="Versão 1.3.5", background="#f0f0f0")
+        versao_label = ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", background="#f0f0f0")
         versao_label.pack(side="bottom", anchor="w", padx=10, pady=5)
 
     def salvar(self):
