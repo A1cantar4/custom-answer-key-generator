@@ -1,9 +1,6 @@
-
 # Gerador de Gabaritos Personalizados
 
-Aplicativo com interface gráfica para gerar gabaritos de provas de forma automatizada e personalizada, ideal para simular questões no estilo de bancas como IBAM, entre outras.
-
-Desenvolvido por [@A1cantar4](https://github.com/A1cantar4)
+Aplicativo com interface gráfica moderna para gerar gabaritos de provas personalizados, ideal para simular questões no estilo de bancas como IBAM, entre outras.
 
 ---
 
@@ -11,68 +8,78 @@ Desenvolvido por [@A1cantar4](https://github.com/A1cantar4)
 
 - Geração de gabaritos com distribuição equilibrada de alternativas.
 - Suporte a 2, 4 ou 5 alternativas (C/E, A-D, A-E).
-- Criação de instruções para geração de questões em estilo de banca.
-- Personalização do nome do arquivo com assunto e banca.
-- Interface gráfica amigável com suporte a temas (via `ttkbootstrap`).
-- Ícone e imagem de fundo personalizáveis.
-- Salva preferências do usuário automaticamente.
+- Interface amigável com temas modernos (via `ttkbootstrap`).
+- Nome do arquivo personalizado com assunto e banca.
+- Armazena preferências do usuário localmente.
 - Atualização automática via GitHub.
+- Totalmente modularizado para manutenção e expansão.
 
 ---
 
 ## 🖼️ Interface
 
-A interface gráfica permite:
+A interface permite:
 
-- Inserir o assunto e a banca examinadora.
-- Definir quantidade de questões (10 a 200).
-- Escolher o número de alternativas.
-- Marcar opções como salvar com nome personalizado e abrir a pasta após salvar
+- Inserir assunto e banca examinadora.
+- Escolher a quantidade de questões (10 a 200).
+- Definir o número de alternativas (2, 4 ou 5).
+- Marcar opções como "abrir após salvar" e "usar nome personalizado".
 
 ---
 
 ## ▶️ Como usar
 
-1. Instale os requisitos com:
-   ```bash
-   pip install -r requirements.txt
-   ```
-   (Você pode criar esse arquivo com: `ttkbootstrap`, `Pillow`, `requests`)
+### 1. Instale os requisitos
 
-2. Execute o aplicativo com Python 3:
-   ```bash
-   python app.py
-   ```
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Execute o aplicativo
+
+```bash
+python main.py
+```
 
 ---
 
-## ⚙️ Compilação (opcional)
+## ⚙️ Estrutura do Projeto
 
-Para gerar um executável com o PyInstaller:
-
-```bash
-pyinstaller GeradorGabaritos.spec
 ```
-
-Ou use o script de compilação no Windows:
-
-```bash
-compilar.bat
+gerador-de-gabaritos-personalizados/
+│
+├── main.py                       # ponto de entrada
+├── requirements.txt
+├── README.md
+├── core/                         # lógica de negócio
+│   ├── generator.py              # geração de gabarito
+│   ├── config.py                 # configurações locais
+│   └── updater.py                # verificação de versão
+├── ui/                           # interface com o usuário
+│   └── layout.py
+├── assets/                       # imagens e ícones
+│   ├── icon.ico
+│   └── background.png
+├── GeradorGabaritos.spec         # para gerar executável
+└── versao.txt                    # (apenas no GitHub)
 ```
 
 ---
 
 ## 🆕 Atualizações
 
-O app verifica automaticamente se há nova versão disponível no GitHub e permite atualização com um clique.
+O app verifica automaticamente novas versões via GitHub e oferece atualização com um clique.
 
 ---
 
-## 📁 Estrutura de Arquivos
+## 🛠️ Compilação (opcional)
 
-- `app.py`: código-fonte principal.
-- `compilar.bat`: script para compilar com PyInstaller.
-- `GeradorGabaritos.spec`: especificação para compilação.
-- `icon.ico`: ícone do programa.
-- `background.png`: imagem de fundo da interface (opcional).
-- `versao.txt`: arquivo online usado para verificação de versão.
+Para compilar um executável com PyInstaller:
+
+Execute o Compliator.bat
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por [@A1cantar4](https://github.com/A1cantar4)

@@ -1,29 +1,24 @@
 @echo off
-setlocal
+echo.
+echo === Compilando o Gerador de Gabaritos Personalizados ===
+echo.
 
-:: Nome do executável final
-set NOME_EXECUTAVEL=GeradorGabaritos
+REM Caminho do ícone e nome do executável
+set ICON=assets\icon.ico
+set MAIN=main.py
+set NAME=GeradorDeGabaritosPersonalizados
 
-:: Nome do script principal
-set SCRIPT=app.py
-
-:: Ícone personalizado
-set ICON=icon.ico
-
-:: Empacotar com PyInstaller
+REM Comando de compilação
 pyinstaller ^
- --noconfirm ^
- --onefile ^
- --windowed ^
- --icon=icon.ico ^
- --add-data "icon.ico;." ^
- --add-data "background.png;." ^
- --name %NOME_EXECUTAVEL% ^
- %SCRIPT%
+--noconfirm ^
+--onefile ^
+--windowed ^
+--name "%NAME%" ^
+--icon "%ICON%" ^
+--add-data "assets;assets" ^
+--hidden-import=tkinter ^
+"%MAIN%"
 
 echo.
-echo ==================================================
-echo Executável gerado com sucesso!
-echo Verifique a pasta dist\%NOME_EXECUTAVEL%.exe
-echo ==================================================
+echo === Compilação concluída ===
 pause
