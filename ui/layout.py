@@ -84,7 +84,7 @@ class GabaritoApp:
         ttk.Button(frame, text="Salvar Gabarito", command=self.salvar).grid(row=8, column=0, columnspan=2, pady=10)
         ttk.Button(frame, text="Verificar atualização", command=lambda: verificar_e_atualizar(mostrar_mensagem=True)).grid(row=9, column=0, columnspan=2, pady=5)
 
-        versao_label = ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", background="#f0f0f0")
+        versao_label = ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", font=("Segoe UI", 9))
         versao_label.pack(side="bottom", anchor="w", padx=10, pady=5)
 
     def salvar(self):
