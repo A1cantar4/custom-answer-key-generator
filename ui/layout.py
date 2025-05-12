@@ -7,7 +7,7 @@ import sys
 import webbrowser
 
 from core.config import carregar_configuracoes, salvar_configuracoes
-from core.generator import gerar_gabarito_simples
+from core.generator import gerar_gabarito_balanceado
 from core.updater import verificar_e_atualizar, registrar_erro
 
 def resource_path(relative_path):
@@ -121,7 +121,7 @@ class GabaritoApp:
         caminho = os.path.join(pasta, nome if nome.endswith(".txt") else f"{nome}.txt")
 
         try:
-            gabarito = gerar_gabarito_simples(qtd=int(self.spin_qtd.get()), letras=letras)
+            gabarito = gerar_gabarito_balanceado(qtd=int(self.spin_qtd.get()), letras=letras)
             instrucao = (
                 f"Gere 5 questões objetivas sobre \"{assunto}\", no estilo da banca \"{banca}\", "
                 "seguindo o seguinte formato:\n\n"
