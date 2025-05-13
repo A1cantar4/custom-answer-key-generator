@@ -1,15 +1,15 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
-from core.updater import VERSAO_ATUAL
 from PIL import Image, ImageTk
 import os
 import sys
 import webbrowser
 
-from core.config import carregar_configuracoes, salvar_configuracoes
+from core.version import VERSAO_ATUAL
 from core.generator import gerar_gabarito_balanceado
 from core.updater import verificar_e_atualizar, registrar_erro
+from core.settings import load_config, save_config
 
 def resource_path(relative_path):
     try:
@@ -38,14 +38,17 @@ class GabaritoApp:
         except:
             self.background_image = None
 
-        self.config = carregar_configuracoes()
+        self.config = load_config()
         self.setup_ui()
-
         verificar_e_atualizar()
 
     def setup_ui(self):
         style = ttk.Style()
-        style.configure("Glass.TFrame", background="#f0f0f0")
+        style.theme_use("flatly")
+        style.configure("Glass.TFrame", background="#ffffff", relief="flat")
+        style.configure("TEntry", fieldbackground="#ffffff", borderwidth=1)
+        style.configure("TCheckbutton", background="#ffffff")
+        style.configure("TButton", padding=6, relief="flat")
         style.configure("Erro.TEntry", fieldbackground="#ffcccc")
         style.configure("Normal.TEntry", fieldbackground="white")
 
@@ -55,8 +58,8 @@ class GabaritoApp:
 
         self.var_nome_personalizado = ttk.BooleanVar(value=self.config.get("nome_personalizado", True))
         self.var_mesma_pasta = ttk.BooleanVar()
-        self.var_abrir_apos_salvar = ttk.BooleanVar()
-        self.var_alternativas = ttk.StringVar()
+        self.var_abrir_apos_salvar = ttk.BooleanVar(value=self.config.get("open_after_saving", False))
+        self.var_alternativas = ttk.StringVar(value=str(self.config.get("last_alt_count", 4)))
 
         ttk.Label(frame, text="Assunto:").grid(row=0, column=0, sticky="e", pady=6)
         self.entry_assunto = ttk.Entry(frame)
@@ -73,9 +76,8 @@ class GabaritoApp:
         ttk.Label(frame, text="Número de alternativas:").grid(row=3, column=0, sticky="e", pady=6)
         radio_frame = ttk.Frame(frame)
         radio_frame.grid(row=3, column=1, sticky="w")
-        ttk.Radiobutton(radio_frame, text="2 (C/E)", variable=self.var_alternativas, value="2").pack(side="left", padx=5)
-        ttk.Radiobutton(radio_frame, text="4 (A-D)", variable=self.var_alternativas, value="4").pack(side="left", padx=5)
-        ttk.Radiobutton(radio_frame, text="5 (A-E)", variable=self.var_alternativas, value="5").pack(side="left", padx=5)
+        for val, texto in [("2", "2 (C/E)"), ("4", "4 (A-D)"), ("5", "5 (A-E)")]:
+            ttk.Radiobutton(radio_frame, text=texto, variable=self.var_alternativas, value=val).pack(side="left", padx=5)
 
         ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=self.var_nome_personalizado).grid(row=4, column=0, columnspan=2, sticky="w", pady=2)
         ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=self.var_mesma_pasta).grid(row=6, column=0, columnspan=2, sticky="w", pady=2)
@@ -84,8 +86,10 @@ class GabaritoApp:
         ttk.Button(frame, text="Salvar Gabarito", command=self.salvar).grid(row=8, column=0, columnspan=2, pady=10)
         ttk.Button(frame, text="Verificar atualização", command=lambda: verificar_e_atualizar(mostrar_mensagem=True)).grid(row=9, column=0, columnspan=2, pady=5)
 
-        versao_label = ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", font=("Segoe UI", 9))
-        versao_label.pack(side="bottom", anchor="w", padx=10, pady=5)
+        ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", font=("Segoe UI", 9)).pack(side="bottom", anchor="w", padx=10, pady=5)
+
+        self.entry_assunto.insert(0, self.config.get("last_used_subject", ""))
+        self.spin_qtd.insert(0, self.config.get("last_question_count", 40))
 
     def salvar(self):
         assunto = self.entry_assunto.get().strip()
@@ -95,7 +99,6 @@ class GabaritoApp:
             self.entry_assunto.configure(style="Erro.TEntry")
             self.entry_banca.configure(style="Erro.TEntry")
             return
-
         self.entry_assunto.configure(style="Normal.TEntry")
         self.entry_banca.configure(style="Normal.TEntry")
 
@@ -110,19 +113,22 @@ class GabaritoApp:
             "5": ["A", "B", "C", "D", "E"]
         }[alternativas]
 
-        pasta = self.config.get("pasta_salvamento", os.getcwd()) if self.var_mesma_pasta.get() else filedialog.askdirectory()
+        pasta = (
+            self.config.get("pasta_salvamento", os.getcwd())
+            if self.var_mesma_pasta.get()
+            else filedialog.askdirectory()
+        )
         if not pasta:
             return
-
-        self.config["pasta_salvamento"] = pasta
-        self.config["nome_personalizado"] = self.var_nome_personalizado.get()
-        salvar_configuracoes(self.config)
 
         nome = f"{assunto}_{banca}" if self.var_nome_personalizado.get() else "gabarito"
         caminho = os.path.join(pasta, nome if nome.endswith(".txt") else f"{nome}.txt")
 
         try:
-            gabarito = gerar_gabarito_balanceado(qtd=int(self.spin_qtd.get()), letras=letras)
+            gabarito = gerar_gabarito_balanceado(
+                qtd=int(self.spin_qtd.get()),
+                letras=letras
+            )
             instrucao = (
                 f"Gere 5 questões objetivas sobre \"{assunto}\", no estilo da banca \"{banca}\", "
                 "seguindo o seguinte formato:\n\n"
@@ -145,3 +151,14 @@ class GabaritoApp:
 
         except Exception as e:
             registrar_erro(e)
+
+        # Atualiza e salva configurações uma única vez
+        self.config.update({
+            "pasta_salvamento": pasta,
+            "nome_personalizado": self.var_nome_personalizado.get(),
+            "last_used_subject": assunto,
+            "last_question_count": int(self.spin_qtd.get()),
+            "last_alt_count": int(alternativas),
+            "open_after_saving": self.var_abrir_apos_salvar.get()
+        })
+        save_config(self.config)
