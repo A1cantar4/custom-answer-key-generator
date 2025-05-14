@@ -9,12 +9,12 @@ import zipfile
 import io
 import shutil
 
-from core.version import VERSAO_ATUAL  # Nova separação
+from core.version import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
 
 GITHUB_RAW_UPDATER_URL = (
     "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/updater.py"
 )
-GITHUB_ZIP_URL = (
+GITHUB_ZIP_URL = ( 
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/archive/refs/heads/master.zip"
 )
 
@@ -28,7 +28,7 @@ def extrair_versao(codigo_remoto):
     match = re.search(r'VERSAO_ATUAL\s*=\s*[\'"](.+?)[\'"]', codigo_remoto)
     return match.group(1) if match else None
 
-def atualizar_projeto():
+def atualizar_projeto(): # usar método de Zipar RAW e extrair
     try:
         response = requests.get(GITHUB_ZIP_URL)
         if response.status_code != 200:
@@ -61,7 +61,7 @@ def atualizar_projeto():
         registrar_erro(e)
         return False
 
-def verificar_e_atualizar(mostrar_mensagem=False):
+def verificar_e_atualizar(mostrar_mensagem=False): # Pop-up Funcionando corretamente
     try:
         r = requests.get(GITHUB_RAW_UPDATER_URL)
         if r.status_code != 200:

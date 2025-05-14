@@ -130,7 +130,7 @@ class GabaritoApp:
                 letras=letras
             )
             instrucao = (
-                f"Gere 5 questões objetivas sobre \"{assunto}\", no estilo da banca \"{banca}\", "
+                f"Gere de 5 em 5 questões objetivas até finalizar as alternativas sobre \"{assunto}\", no estilo da banca \"{banca}\", "
                 "seguindo o seguinte formato:\n\n"
                 "- Enunciado claro e realista, apenas diga o gabarito quando solicitado\n"
                 f"- {len(letras)} alternativas ({', '.join(letras)})\n"
