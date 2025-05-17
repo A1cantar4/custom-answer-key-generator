@@ -1,3 +1,5 @@
+# imports permanecem os mesmos
+import re
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
@@ -11,6 +13,8 @@ from core.generator import gerar_gabarito_balanceado
 from core.updater import verificar_e_atualizar, registrar_erro
 from core.settings import load_config, save_config
 from core.reader import extrair_texto_docx, extrair_texto_pdf
+from core.exportador import salvar_pdf
+
 
 def resource_path(relative_path):
     try:
@@ -19,11 +23,12 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
+
 class GabaritoApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Gerador de Gabaritos Personalizados")
-        self.root.geometry("700x580")
+        self.root.geometry("700x700") # <--- Lembrar de mudar linha 40
         self.root.resizable(False, False)
 
         try:
@@ -32,7 +37,7 @@ class GabaritoApp:
             pass
 
         try:
-            bg_image = Image.open(resource_path("assets/background.png")).resize((700, 580))
+            bg_image = Image.open(resource_path("assets/background.png")).resize((700, 700)) # <-- Mudar quando mudar acima
             self.background_image = ImageTk.PhotoImage(bg_image)
             bg_label = ttk.Label(self.root, image=self.background_image)
             bg_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -43,6 +48,33 @@ class GabaritoApp:
         self.arquivos_importados = []
         self.setup_ui()
         verificar_e_atualizar()
+
+    def reabrir_ultima_config(self):
+        try:
+            config = load_config()
+
+            self.entry_assunto.delete(0, 'end')
+            self.entry_assunto.insert(0, config.get("last_used_subject", ""))
+
+            self.entry_banca.delete(0, 'end')
+            self.entry_banca.insert(0, config.get("last_used_board", ""))
+
+            self.spin_qtd.delete(0, 'end')
+            self.spin_qtd.insert(0, config.get("last_question_count", 40))
+
+            self.var_alternativas.set(str(config.get("last_alt_count", 5)))
+            self.var_nome_personalizado.set(config.get("nome_personalizado", True))
+            self.var_mesma_pasta.set(config.get("salvar_mesma_pasta", True))
+            self.var_abrir_apos_salvar.set(config.get("open_after_saving", False))
+            self.var_exportar_pdf.set(config.get("exportar_pdf", False))
+            self.var_preview.set(config.get("preview", False))
+            self.var_dificuldade.set(config.get("modo_dificuldade", "Médio"))
+
+            messagebox.showinfo("Configuração carregada", "A última configuração foi restaurada com sucesso.")
+        except Exception as e:
+            registrar_erro(e)
+            messagebox.showerror("Erro", "Erro ao tentar restaurar a última configuração.")
+
 
     def setup_ui(self):
         style = ttk.Style()
@@ -59,9 +91,12 @@ class GabaritoApp:
         frame.columnconfigure(1, weight=1)
 
         self.var_nome_personalizado = ttk.BooleanVar(value=self.config.get("nome_personalizado", True))
-        self.var_mesma_pasta = ttk.BooleanVar()
+        self.var_mesma_pasta = ttk.BooleanVar(value=self.config.get("salvar_mesma_pasta", True))
         self.var_abrir_apos_salvar = ttk.BooleanVar(value=self.config.get("open_after_saving", False))
-        self.var_alternativas = ttk.StringVar(value=str(self.config.get("last_alt_count", 4)))
+        self.var_preview = ttk.BooleanVar(value=self.config.get("preview", False))
+        self.var_exportar_pdf = ttk.BooleanVar(value=self.config.get("exportar_pdf", False))
+        self.var_alternativas = ttk.StringVar(value=str(self.config.get("last_alt_count", 5)))
+        self.var_dificuldade = ttk.StringVar(value=self.config.get("modo_dificuldade", "Médio"))
 
         ttk.Label(frame, text="Assunto:").grid(row=0, column=0, sticky="e", pady=6)
         self.entry_assunto = ttk.Entry(frame)
@@ -85,26 +120,38 @@ class GabaritoApp:
         for val, texto in [("2", "2 (C/E)"), ("4", "4 (A-D)"), ("5", "5 (A-E)")]:
             ttk.Radiobutton(radio_frame, text=texto, variable=self.var_alternativas, value=val).pack(side="left", padx=5)
 
-        ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=self.var_nome_personalizado).grid(row=5, column=0, columnspan=2, sticky="w", pady=2)
+        ttk.Label(frame, text="Dificuldade:").grid(row=5, column=0, sticky="e", pady=6)
+        dificuldade_combo = ttk.Combobox(frame, textvariable=self.var_dificuldade, values=["Fácil", "Médio", "Difícil", "Modo Extremo"], state="readonly")
+        dificuldade_combo.grid(row=5, column=1, sticky="w", pady=6)
+
+        ttk.Checkbutton(frame, text="Salvar com nome do Assunto", variable=self.var_nome_personalizado).grid(row=6, column=0, columnspan=2, sticky="w", pady=2)
 
         botoes_frame = ttk.Frame(frame)
-        botoes_frame.grid(row=6, column=0, columnspan=2, pady=6, sticky="w")
+        botoes_frame.grid(row=7, column=0, columnspan=2, pady=6, sticky="w")
 
         ttk.Button(botoes_frame, text="Importar Arquivo (.docx ou .pdf)", command=self.importar_arquivo).pack(side="left", padx=(0, 10))
         self.label_arquivos = ttk.Label(botoes_frame, text="Nenhum arquivo anexado", foreground="gray")
         self.label_arquivos.pack(side="left")
 
-        ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=self.var_mesma_pasta).grid(row=7, column=0, columnspan=2, sticky="w", pady=2)
-        ttk.Checkbutton(frame, text="Abrir pasta após salvar", variable=self.var_abrir_apos_salvar).grid(row=8, column=0, columnspan=2, sticky="w", pady=2)
+        ttk.Checkbutton(frame, text="Salvar na mesma pasta", variable=self.var_mesma_pasta).grid(row=8, column=0, columnspan=2, sticky="w", pady=2)
+        ttk.Checkbutton(frame, text="Abrir pasta após salvar", variable=self.var_abrir_apos_salvar).grid(row=9, column=0, columnspan=2, sticky="w", pady=2)
+        ttk.Checkbutton(frame, text="Visualizar antes de salvar", variable=self.var_preview).grid(row=10, column=0, columnspan=2, sticky="w", pady=2)
+        ttk.Checkbutton(frame, text="Exportar também como PDF", variable=self.var_exportar_pdf).grid(row=11, column=0, columnspan=2, sticky="w", pady=2)
 
-        ttk.Button(frame, text="Salvar Gabarito", command=self.salvar).grid(row=9, column=0, columnspan=2, pady=10)
-        ttk.Button(frame, text="Verificar atualização", command=lambda: verificar_e_atualizar(mostrar_mensagem=True)).grid(row=10, column=0, columnspan=2, pady=5)
+        ttk.Button(frame, text="Salvar Gabarito", command=self.salvar).grid(row=12, column=0, columnspan=2, pady=10)
+        ttk.Button(frame, text="Verificar atualização", command=lambda: verificar_e_atualizar(mostrar_mensagem=True)).grid(row=13, column=0, columnspan=2, pady=5)
 
         ttk.Label(self.root, text=f"Versão {VERSAO_ATUAL}", font=("Segoe UI", 9)).pack(side="bottom", anchor="w", padx=10, pady=5)
 
+        # Restaura últimos valores usados
         self.entry_assunto.insert(0, self.config.get("last_used_subject", ""))
+        self.entry_banca.insert(0, self.config.get("last_used_board", ""))
         self.spin_qtd.insert(0, self.config.get("last_question_count", 40))
 
+        # Botão discreto para reabrir última configuração
+        ttk.Button(self.root, text="↺ Reabrir última Configuração", bootstyle="link", command=self.reabrir_ultima_config)\
+            .place(x=430, y=594)
+        
     def importar_arquivo(self):
         caminhos = filedialog.askopenfilenames(filetypes=[("Documentos", "*.pdf *.docx")])
         self.arquivos_importados = list(caminhos)
@@ -118,19 +165,31 @@ class GabaritoApp:
         else:
             self.label_arquivos.config(text="Nenhum arquivo anexado", foreground="gray")
 
+
     def salvar(self):
         assunto = self.entry_assunto.get().strip()
         banca = self.entry_banca.get().strip()
         materia = self.entry_materia.get().strip()
+        qtd = self.spin_qtd.get().strip()
+        alternativas = self.var_alternativas.get().strip()
 
-        if not banca:
-            self.entry_banca.configure(style="Erro.TEntry")
-            return
-        self.entry_banca.configure(style="Normal.TEntry")
+        campos_obrigatorios = {
+            "assunto": assunto,
+            "banca": banca,
+            "qtd": qtd,
+            "alternativas": alternativas
+        }
 
-        alternativas = self.var_alternativas.get()
-        if alternativas not in ("2", "4", "5"):
-            messagebox.showwarning("Atenção", "Escolha entre 2, 4 ou 5 alternativas antes de continuar.")
+        campos_validos = True
+        for campo, valor in campos_obrigatorios.items():
+            if not valor or (campo == "qtd" and not valor.isdigit()):
+                getattr(self, f"entry_{campo}" if campo in ["assunto", "banca"] else "spin_qtd").configure(style="Erro.TEntry")
+                campos_validos = False
+            else:
+                getattr(self, f"entry_{campo}" if campo in ["assunto", "banca"] else "spin_qtd").configure(style="Normal.TEntry")
+
+        if not campos_validos:
+            messagebox.showerror("Erro", "Preencha todos os campos obrigatórios corretamente.")
             return
 
         letras = {
@@ -139,20 +198,24 @@ class GabaritoApp:
             "5": ["A", "B", "C", "D", "E"]
         }[alternativas]
 
-        pasta = (
-            self.config.get("pasta_salvamento", os.getcwd())
-            if self.var_mesma_pasta.get()
-            else filedialog.askdirectory()
-        )
+        # Garantir nome de arquivo válido
+        nome_base = f"{assunto}_{banca}" if self.var_nome_personalizado.get() else "gabarito"
+        nome_base = re.sub(r'[^a-zA-Z0-9_\- ]', '', nome_base).strip().replace(" ", "_")
+        nome_arquivo = f"{nome_base}.txt"
+
+        # Pasta de salvamento
+        pasta = os.path.abspath(".") if self.var_mesma_pasta.get() else filedialog.askdirectory()
         if not pasta:
             return
+        caminho = os.path.join(pasta, nome_arquivo)
 
-        nome = f"{assunto}_{banca}" if self.var_nome_personalizado.get() else "gabarito"
-        caminho = os.path.join(pasta, nome if nome.endswith(".txt") else f"{nome}.txt")
+        if os.path.exists(caminho):
+            if not messagebox.askyesno("Arquivo existente", f"O arquivo '{nome_arquivo}' já existe. Deseja substituir?"):
+                return
 
         try:
             gabarito = gerar_gabarito_balanceado(
-                qtd=int(self.spin_qtd.get()),
+                qtd=int(qtd),
                 letras=letras
             )
 
@@ -170,18 +233,42 @@ class GabaritoApp:
                 if materia:
                     assunto += f", na matéria {materia}"
 
+            # Formatar sequência
+            gabarito_enumerado = "\n".join(f"{i+1}. {letra}" for i, letra in enumerate(gabarito))
+
+            modo = self.var_dificuldade.get()
+
+            instrucoes_especificas = {
+                "Fácil": "- Linguagem simples, questões diretas, sem pegadinhas.",
+                "Médio": "- Nível padrão de concursos, sem exageros.",
+                "Difícil": "- Questões mais analíticas, alternativas próximas.",
+                "Modo Extremo": "- Questões altamente elaboradas, com linguagem complexa e alternativas muito parecidas."
+            }
+
             instrucao = (
-                f"Gere de 5 em 5 questões objetivas até finalizar as alternativas sobre \"{assunto}\", no estilo da banca \"{banca}\", "
-                "seguindo o seguinte formato:\n\n"
-                "- Enunciado claro e realista, apenas diga o gabarito quando solicitado\n"
-                f"- {len(letras)} alternativas ({', '.join(letras)})\n"
-                "- Apenas uma correta\n"
-                "- **A posição correta deve seguir, em ordem, a sequência de letras fornecida abaixo**\n"
-                "- **Use essa sequência apenas para estruturar as questões**\n"
-                "- **Não repita nem mencione essa sequência na resposta**\n\n"
-                "Sequência de gabarito:\n"
-                f"{''.join(gabarito)}\n"
+                f"Gere questões objetivas com base em \"{assunto}\" no estilo da banca \"{banca}\".\n\n"
+                "Regras obrigatórias:\n"
+                f"{instrucoes_especificas.get(modo, '')}\n"
+                f"- Cada questão deve ter {len(letras)} alternativas ({', '.join(letras)}), com apenas UMA correta.\n"
+                "- A posição da alternativa correta DEVE seguir exatamente a ordem da lista abaixo.\n"
+                "- NÃO mencione ou repita a sequência no enunciado.\n"
+                "- Gere 5 questões por vez.\n"
             )
+
+            if "português" in assunto.lower() or "português" in materia.lower():
+                instrucao += (
+                    "\nOBS: Como o tema envolve Português, use um texto base curto a cada 5 questões. "
+                    "Após 5 questões, gere um novo texto para o próximo grupo.\n"
+                )
+
+            instrucao += (
+                "\n📝 Exemplo:\n1. C\n2. A\n3. D\n=> A 1ª questão deve ter C como correta, a 2ª A, etc.\n"
+                "\n📌 Sequência de gabarito:\n"
+                f"{gabarito_enumerado}\n"
+            )
+
+            if self.var_preview.get():
+                messagebox.showinfo("Preview do Gabarito", instrucao[:1000] + ("\n..." if len(instrucao) > 1000 else ""))
 
             with open(caminho, "w", encoding="utf-8") as f:
                 f.write(instrucao)
@@ -194,15 +281,32 @@ class GabaritoApp:
 
             messagebox.showinfo("Sucesso", f"Gabarito salvo em:\n{caminho}")
 
+            # TODO: Exportar como PDF futuramente (var_exportar_pdf.get())
+
         except Exception as e:
             registrar_erro(e)
+            messagebox.showerror("Erro", "Erro ao gerar o gabarito.")
 
+            if self.var_exportar_pdf.get():
+                sucesso_pdf = salvar_pdf(caminho)
+                if sucesso_pdf:
+                    print("PDF exportado com sucesso.")
+                else:
+                    messagebox.showwarning("Aviso", "Não foi possível exportar o PDF.")
+
+
+        # Salvar config atual
         self.config.update({
             "pasta_salvamento": pasta,
             "nome_personalizado": self.var_nome_personalizado.get(),
-            "last_used_subject": assunto,
-            "last_question_count": int(self.spin_qtd.get()),
+            "salvar_mesma_pasta": self.var_mesma_pasta.get(),
+            "open_after_saving": self.var_abrir_apos_salvar.get(),
+            "preview": self.var_preview.get(),
+            "exportar_pdf": self.var_exportar_pdf.get(),
+            "last_used_subject": self.entry_assunto.get().strip(),
+            "last_used_board": self.entry_banca.get().strip(),
+            "last_question_count": int(qtd),
             "last_alt_count": int(alternativas),
-            "open_after_saving": self.var_abrir_apos_salvar.get()
+            "modo_dificuldade": self.var_dificuldade.get()
         })
         save_config(self.config)

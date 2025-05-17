@@ -1,10 +1,14 @@
 {
     "open_after_saving": false,
     "use_custom_name": false,
-    "last_used_subject": "os conte\u00fados dos documentos anexados",
-    "last_used_board": "",
+    "last_used_subject": "[extra\u00eddo dos arquivos anexados]",
+    "last_used_board": "Ibam",
     "last_alt_count": 4,
-    "last_question_count": 23,
+    "last_question_count": 30,
     "pasta_salvamento": "C:/Users/falca/Desktop",
-    "nome_personalizado": false
+    "nome_personalizado": false,
+    "salvar_mesma_pasta": false,
+    "preview": false,
+    "exportar_pdf": true,
+    "modo_dificuldade": "Modo Extremo"
 }
