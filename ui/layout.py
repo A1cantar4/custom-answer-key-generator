@@ -250,8 +250,9 @@ class GabaritoApp:
                 "Regras obrigatórias:\n"
                 f"{instrucoes_especificas.get(modo, '')}\n"
                 f"- Cada questão deve ter {len(letras)} alternativas ({', '.join(letras)}), com apenas UMA correta.\n"
-                "- A posição da alternativa correta DEVE seguir exatamente a ordem da lista abaixo.\n"
-                "- NÃO mencione ou repita a sequência no enunciado.\n"
+                "- A posição da alternativa correta DEVE SEGUIR EXATAMENTE a ordem da lista abaixo.\n"
+                "- NÃO mencione ou repita a sequência no enunciado, apenas se solicitado.\n"
+                "- NÃO sublinhe, indique, ou coloque em negrito as alternativas corretas.\n"
                 "- Gere 5 questões por vez.\n"
             )
 

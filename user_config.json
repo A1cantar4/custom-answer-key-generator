@@ -8,7 +8,7 @@
     "pasta_salvamento": "C:/Users/falca/Desktop",
     "nome_personalizado": false,
     "salvar_mesma_pasta": false,
-    "preview": false,
-    "exportar_pdf": true,
+    "preview": true,
+    "exportar_pdf": false,
     "modo_dificuldade": "Modo Extremo"
 }
