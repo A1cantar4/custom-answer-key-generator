@@ -213,90 +213,101 @@ class GabaritoApp:
             if not messagebox.askyesno("Arquivo existente", f"O arquivo '{nome_arquivo}' já existe. Deseja substituir?"):
                 return
 
+        # Geração do gabarito
         try:
             gabarito = gerar_gabarito_balanceado(
                 qtd=int(qtd),
                 letras=letras
             )
-
-            conteudo_extra = ""
-            for caminho_importado in getattr(self, "arquivos_importados", []):
-                if caminho_importado.lower().endswith(".docx"):
-                    conteudo_extra += f"\n\n[Conteúdo do arquivo {os.path.basename(caminho_importado)}]:\n"
-                    conteudo_extra += extrair_texto_docx(caminho_importado)
-                elif caminho_importado.lower().endswith(".pdf"):
-                    conteudo_extra += f"\n\n[Conteúdo do arquivo {os.path.basename(caminho_importado)}]:\n"
-                    conteudo_extra += extrair_texto_pdf(caminho_importado)
-
-            if conteudo_extra:
-                assunto = "os conteúdos dos documentos anexados"
-                if materia:
-                    assunto += f", na matéria {materia}"
-
-            # Formatar sequência
-            gabarito_enumerado = "\n".join(f"{i+1}. {letra}" for i, letra in enumerate(gabarito))
-
-            modo = self.var_dificuldade.get()
-
-            instrucoes_especificas = {
-                "Fácil": "- Linguagem simples, questões diretas, sem pegadinhas.",
-                "Médio": "- Nível padrão de concursos, sem exageros.",
-                "Difícil": "- Questões mais analíticas, alternativas próximas.",
-                "Modo Extremo": "- Questões altamente elaboradas, com linguagem complexa e alternativas muito parecidas."
-            }
-
-            instrucao = (
-                f"Gere questões objetivas com base em \"{assunto}\" no estilo da banca \"{banca}\".\n\n"
-                "Regras obrigatórias:\n"
-                f"{instrucoes_especificas.get(modo, '')}\n"
-                f"- Cada questão deve ter {len(letras)} alternativas ({', '.join(letras)}), com apenas UMA correta.\n"
-                "- A posição da alternativa correta DEVE SEGUIR EXATAMENTE a ordem da lista abaixo.\n"
-                "- NÃO mencione ou repita a sequência no enunciado, apenas se solicitado.\n"
-                "- NÃO sublinhe, indique, ou coloque em negrito as alternativas corretas.\n"
-                "- Gere 5 questões por vez.\n"
-            )
-
-            if "português" in assunto.lower() or "português" in materia.lower():
-                instrucao += (
-                    "\nOBS: Como o tema envolve Português, use um texto base curto a cada 5 questões. "
-                    "Após 5 questões, gere um novo texto para o próximo grupo.\n"
-                )
-
-            instrucao += (
-                "\n📝 Exemplo:\n1. C\n2. A\n3. D\n=> A 1ª questão deve ter C como correta, a 2ª A, etc.\n"
-                "\n📌 Sequência de gabarito:\n"
-                f"{gabarito_enumerado}\n"
-            )
-
-            if self.var_preview.get():
-                messagebox.showinfo("Preview do Gabarito", instrucao[:1000] + ("\n..." if len(instrucao) > 1000 else ""))
-
-            with open(caminho, "w", encoding="utf-8") as f:
-                f.write(instrucao)
-                if conteudo_extra:
-                    f.write("\n\nConteúdo adicional extraído dos documentos:\n")
-                    f.write(conteudo_extra)
-
-            if self.var_abrir_apos_salvar.get():
-                webbrowser.open(pasta)
-
-            messagebox.showinfo("Sucesso", f"Gabarito salvo em:\n{caminho}")
-
-            # TODO: Exportar como PDF futuramente (var_exportar_pdf.get())
-
         except Exception as e:
             registrar_erro(e)
             messagebox.showerror("Erro", "Erro ao gerar o gabarito.")
+            return
 
-            if self.var_exportar_pdf.get():
+        # Extração de conteúdo adicional dos arquivos
+        conteudo_extra = ""
+        for caminho_importado in getattr(self, "arquivos_importados", []):
+            if caminho_importado.lower().endswith(".docx"):
+                conteudo_extra += f"\n\n[Conteúdo do arquivo {os.path.basename(caminho_importado)}]:\n"
+                conteudo_extra += extrair_texto_docx(caminho_importado)
+            elif caminho_importado.lower().endswith(".pdf"):
+                conteudo_extra += f"\n\n[Conteúdo do arquivo {os.path.basename(caminho_importado)}]:\n"
+                conteudo_extra += extrair_texto_pdf(caminho_importado)
+
+        if conteudo_extra:
+            assunto = "os conteúdos dos documentos anexados"
+            if materia:
+                assunto += f", na matéria {materia}"
+
+        # Formatar sequência
+        gabarito_enumerado = "\n".join(f"{i+1}. {letra}" for i, letra in enumerate(gabarito))
+        modo = self.var_dificuldade.get()
+
+        instrucoes_especificas = {
+            "Fácil": "- Linguagem simples, questões diretas, sem pegadinhas.",
+            "Médio": "- Nível padrão de concursos, sem exageros.",
+            "Difícil": "- Questões mais analíticas, alternativas próximas.",
+            "Modo Extremo": "- Questões altamente elaboradas, com linguagem complexa e alternativas muito parecidas."
+        }
+
+        instrucao = (
+            f"Gere questões objetivas com base em \"{assunto}\" no estilo da banca \"{banca}\".\n\n"
+            "Regras obrigatórias:\n"
+            f"{instrucoes_especificas.get(modo, '')}\n"
+            f"- Cada questão deve ter {len(letras)} alternativas ({', '.join(letras)}), com apenas UMA correta.\n"
+            "- A posição da alternativa correta DEVE SEGUIR EXATAMENTE a ordem da lista abaixo.\n"
+            "- NÃO mencione ou repita a sequência no enunciado, apenas se solicitado.\n"
+            "- NÃO sublinhe, indique, ou coloque em negrito as alternativas corretas.\n"
+            "- Gere 5 questões por vez.\n"
+        )
+
+        if "português" in assunto.lower() or "português" in materia.lower():
+            instrucao += (
+                "\nOBS: Como o tema envolve Português, use um texto base curto a cada 5 questões. "
+                "Após 5 questões, gere um novo texto para o próximo grupo.\n"
+            )
+
+        instrucao += (
+            "\n📝 Exemplo:\n1. C\n2. A\n3. D\n=> A 1ª questão deve ter C como correta, a 2ª A, etc.\n"
+            "\n📌 Sequência de gabarito:\n"
+            f"{gabarito_enumerado}\n"
+        )
+
+        if self.var_preview.get():
+            messagebox.showinfo("Preview do Gabarito", instrucao[:1000] + ("\n..." if len(instrucao) > 1000 else ""))
+
+        # Salvar o .txt
+        with open(caminho, "w", encoding="utf-8") as f:
+            f.write(instrucao)
+            if conteudo_extra:
+                f.write("\n\nConteúdo adicional extraído dos documentos:\n")
+                f.write(conteudo_extra)
+
+        # ✅ Exportar como PDF, se solicitado
+        if self.var_exportar_pdf.get():
+            try:
                 sucesso_pdf = salvar_pdf(caminho)
-                if sucesso_pdf:
-                    print("PDF exportado com sucesso.")
-                else:
+                if not sucesso_pdf:
                     messagebox.showwarning("Aviso", "Não foi possível exportar o PDF.")
+            except Exception as e:
+                registrar_erro(e)
+                messagebox.showwarning("Erro", "Erro ao exportar o PDF.")
+
+        # Abrir pasta após salvar
+        if self.var_abrir_apos_salvar.get():
+            webbrowser.open(pasta)
+
+        mensagem_final = f"Gabarito salvo em:\n{caminho}"
+
+        if self.var_exportar_pdf.get():
+            caminho_pdf = os.path.splitext(caminho)[0] + ".pdf"
+            if os.path.exists(caminho_pdf):
+                mensagem_final += f"\n\n📄 PDF exportado como:\n{caminho_pdf}"
+
+        messagebox.showinfo("Sucesso", mensagem_final)
 
 
-        # Salvar config atual
+        # Atualiza e salva as configurações do usuário
         self.config.update({
             "pasta_salvamento": pasta,
             "nome_personalizado": self.var_nome_personalizado.get(),
