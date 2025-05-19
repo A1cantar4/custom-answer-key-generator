@@ -1,3 +1,6 @@
-ttkbootstrap>=1.10.1
-Pillow>=9.0.0
-requests>=2.25.0
+ttkbootstrap
+python-docx
+PyPDF2
+reportlab
+Pillow
+requests

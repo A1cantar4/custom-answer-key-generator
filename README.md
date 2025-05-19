@@ -1,85 +1,89 @@
-# Gerador de Gabaritos Personalizados
+# 📝 Gerador de Gabaritos Personalizados
 
-Aplicativo com interface gráfica moderna para gerar gabaritos de provas personalizados, ideal para simular questões no estilo de bancas como IBAM, entre outras.
+Uma aplicação com interface gráfica feita em Python para gerar sequências de gabaritos balanceadas e exportá-las como `.txt` e `.pdf`, com suporte a customização, estilos de banca e importação de arquivos externos como DOCX e PDF.
 
 ---
 
-## ✅ Funcionalidades
+## 📦 Funcionalidades
 
-- Geração de gabaritos com distribuição equilibrada de alternativas.
-- Suporte a 2, 4 ou 5 alternativas (C/E, A-D, A-E).
-- Interface amigável com temas modernos (via `ttkbootstrap`).
-- Nome do arquivo personalizado com assunto e banca.
-- Armazena preferências do usuário localmente.
-- Atualização automática via GitHub.
-- Totalmente modularizado para manutenção e expansão.
+- 🎯 Geração balanceada de gabaritos com 2, 4 ou 5 alternativas (ex: C/E, A-D, A-E)
+- 🧠 Níveis de dificuldade ajustáveis (Fácil, Médio, Difícil, Modo Extremo)
+- 📂 Importação de arquivos `.docx` e `.pdf` com leitura automática de conteúdo
+- 🧾 Exportação para `.txt` e `.pdf`
+- 💾 Lembrança de configurações anteriores (salvas em `user_config.json`)
+- 🔁 Verificação de atualizações via GitHub
+- 💡 Interface visual com `ttkbootstrap`
 
 ---
 
 ## 🖼️ Interface
 
-A interface permite:
-
-- Inserir assunto e banca examinadora.
-- Escolher a quantidade de questões (10 a 200).
-- Definir o número de alternativas (2, 4 ou 5).
-- Marcar opções como "abrir após salvar" e "usar nome personalizado".
+![screenshot](https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/assets/preview.png)
 
 ---
 
-## ▶️ Como usar
+## 🚀 Como executar
 
-### 1. Instale os requisitos
+### 1. Clonar o repositório
 
-```bash
+git clone https://github.com/A1cantar4/gerador-de-gabaritos-personalizados.git
+
+cd gerador-de-gabaritos-personalizados
+
+### 2. Instalar dependências
+
+Você pode usar pip:
 pip install -r requirements.txt
-```
 
-### 2. Execute o aplicativo
+Ou instalar manualmente:
+pip install ttkbootstrap python-docx PyPDF2 reportlab Pillow requests
 
-```bash
+### 3. Executar o programa
 python main.py
-```
 
----
-
-## ⚙️ Estrutura do Projeto
-
-```
+## 📁 Estrutura do Projeto
 gerador-de-gabaritos-personalizados/
 │
-├── main.py                       # ponto de entrada
-├── requirements.txt
-├── README.md
-├── core/                         # lógica de negócio
-│   ├── generator.py              # geração de gabarito
-│   ├── config.py                 # configurações locais
-│   └── updater.py                # verificação de versão
-├── ui/                           # interface com o usuário
-│   └── layout.py
-├── assets/                       # imagens e ícones
+├── core/
+│   ├── generator.py       # Geração do gabarito balanceado
+│   ├── reader.py          # Leitura de arquivos DOCX e PDF
+│   ├── exportador.py      # Exportação para PDF com ReportLab
+│   ├── updater.py         # Sistema de atualização automática
+│   ├── settings.py        # Gerenciamento de configurações do usuário
+│   └── version.py         # Versão atual da aplicação
+│
+├── ui/
+│   ├── main_window.py     # Classe principal da interface
+│   ├── styles.py          # Estilo visual (cores, fontes, bordas)
+│   ├── widgets.py         # Criação dos campos e opções da UI
+│   └── handlers.py        # Lógica dos botões (salvar, importar, etc.)
+│
+├── assets/
 │   ├── icon.ico
+│   ├── preview.png
 │   └── background.png
-├── GeradorGabaritos.spec         # para gerar executável
-└── versao.txt                    # (apenas no GitHub)
-```
+│
+├── user_config.json       # Configurações salvas do usuário
+├── requirements.txt       # Dependências do projeto
+├── main.py                # Arquivo principal de execução
+└── README.md              # Este arquivo
 
----
+## 🛠️ Tecnologias Utilizadas
+Python 3.8+
+Tkinter + ttkbootstrap — interface gráfica moderna
+ReportLab — geração de PDFs
+python-docx / PyPDF2 — leitura de arquivos
+Pillow — imagens no app
+Requests — atualizações automáticas
 
-## 🆕 Atualizações
+## 🧪 Testado em Windows 10/11
+Python 3.10+
 
-O app verifica automaticamente novas versões via GitHub e oferece atualização com um clique.
+## 🗂️ Licença
+Este projeto está licenciado sob a MIT License.
 
----
-
-## 🛠️ Compilação (opcional)
-
-Para compilar um executável com PyInstaller:
-
-Execute o Compliator.bat
-
----
+## 🤝 Contribuição
+Pull requests são bem-vindos! Para grandes mudanças, abra uma issue primeiro para discutir o que você gostaria de modificar.
 
 ## 👨‍💻 Autor
-
-Desenvolvido por [@A1cantar4](https://github.com/A1cantar4)
+Desenvolvido por A1cantar4 com 💙
