@@ -2,7 +2,6 @@ import requests
 import sys
 import os
 import subprocess
-from tkinter import messagebox
 import traceback
 import re
 import zipfile
@@ -10,17 +9,34 @@ import io
 import shutil
 import tempfile
 import ctypes
+from tkinter import messagebox
 
-from core.versao import VERSAO_ATUAL  # Versão local atual
+from core.versao import VERSAO_ATUAL
 
-GITHUB_RAW_UPDATER_URL = (
+# URLs
+GITHUB_RAW_VERSAO_URL = (
     "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/versao.py"
 )
-GITHUB_ZIP_URL = (
+
+# Para modo .py
+GITHUB_ZIP_SOURCE_URL = (
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/archive/refs/heads/master.zip"
 )
 
-IGNORAR_ARQUIVOS = ["config.json", "log_erro.txt", "__pycache__", ".gitignore", ".gitattributes", ".git", ".github"]
+# Para modo .exe
+GITHUB_ZIP_EXE_URL = (
+    "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/releases/latest/download/GabaritoApp.zip"
+)
+
+NOME_EXECUTAVEL = "GabaritoApp.exe"
+IGNORAR_ARQUIVOS = [
+    "config.json", "log_erro.txt", "__pycache__", ".gitignore", ".gitattributes", ".git", ".github"
+]
+
+# === Funções utilitárias ===
+
+def is_frozen():
+    return getattr(sys, 'frozen', False)
 
 def tem_permissao_admin():
     try:
@@ -33,25 +49,27 @@ def registrar_erro(e):
     try:
         with open("log_erro.txt", "a", encoding="utf-8") as f:
             f.write(erro + "\n")
-    except Exception:
-        pass  # Evita falha se o log estiver protegido
+    except:
+        pass
     try:
         messagebox.showerror("Erro", f"Ocorreu um erro:\n{type(e).__name__}: {e}")
     except:
-        pass  # Evita falha na GUI
+        pass
 
 def extrair_versao(codigo_remoto):
     match = re.search(r'VERSAO_ATUAL\s*=\s*[\'"](.+?)[\'"]', codigo_remoto)
     return match.group(1) if match else None
 
-def atualizar_projeto():
+# === Atualização modo .PY (desenvolvedor) ===
+
+def atualizar_codigo_fonte():
     try:
-        response = requests.get(GITHUB_ZIP_URL)
+        response = requests.get(GITHUB_ZIP_SOURCE_URL)
         if response.status_code != 200:
-            raise Exception("Não foi possível baixar o arquivo ZIP do GitHub.")
+            raise Exception("Não foi possível baixar o código-fonte.")
 
         if not zipfile.is_zipfile(io.BytesIO(response.content)):
-            raise Exception("O arquivo ZIP recebido está corrompido ou inválido.")
+            raise Exception("Arquivo ZIP do GitHub inválido ou corrompido.")
 
         with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
             temp_folder = tempfile.mkdtemp()
@@ -72,22 +90,19 @@ def atualizar_projeto():
                             os.remove(dest)
                         else:
                             shutil.rmtree(dest)
-                    except Exception:
-                        continue  # Ignora falhas de exclusão
+                    except:
+                        continue
 
                 try:
                     if os.path.isfile(src):
                         shutil.copy2(src, dest)
                     else:
                         shutil.copytree(src, dest)
-                except Exception:
-                    continue  # Ignora falhas de cópia
+                except:
+                    continue
 
-            try:
-                with open("versao_antiga.txt", "w", encoding="utf-8") as f:
-                    f.write(VERSAO_ATUAL)
-            except Exception:
-                pass
+            with open("versao_antiga.txt", "w", encoding="utf-8") as f:
+                f.write(VERSAO_ATUAL)
 
             shutil.rmtree(temp_folder)
             return True
@@ -96,43 +111,75 @@ def atualizar_projeto():
         registrar_erro(e)
         return False
 
+# === Atualização modo .EXE (usuário final) ===
+
+def atualizar_executavel():
+    try:
+        response = requests.get(GITHUB_ZIP_EXE_URL)
+        if response.status_code != 200:
+            raise Exception("Não foi possível baixar a release.")
+
+        zip_bytes = io.BytesIO(response.content)
+        with zipfile.ZipFile(zip_bytes) as z:
+            exe_temp = "novo_temp.exe"
+            for nome in z.namelist():
+                if nome.endswith(".exe"):
+                    with open(exe_temp, "wb") as f:
+                        f.write(z.read(nome))
+                    break
+            else:
+                raise Exception("Executável não encontrado no ZIP.")
+
+        nome_atual = os.path.basename(sys.executable)
+
+        os.rename(nome_atual, "antigo_backup.exe")
+        os.rename(exe_temp, nome_atual)
+
+        return True
+
+    except Exception as e:
+        registrar_erro(e)
+        return False
+
+# === Verificador principal híbrido ===
+
 def verificar_e_atualizar(mostrar_mensagem=False):
     try:
-        r = requests.get(GITHUB_RAW_UPDATER_URL)
+        r = requests.get(GITHUB_RAW_VERSAO_URL)
         if r.status_code != 200:
             if mostrar_mensagem:
                 messagebox.showerror("Erro", "Não foi possível acessar a versão online.")
             return
 
-        codigo_remoto = r.text
-        versao_online = extrair_versao(codigo_remoto)
+        versao_online = extrair_versao(r.text)
 
         if versao_online and versao_online != VERSAO_ATUAL:
             if messagebox.askyesno("Atualização disponível", f"Versão {versao_online} disponível. Atualizar agora?"):
 
                 if not tem_permissao_admin():
-                    resposta = messagebox.askyesno("Permissão necessária", "Para atualizar, é necessário executar como administrador. Deseja continuar?")
+                    resposta = messagebox.askyesno("Permissão necessária", "A atualização requer permissões de administrador. Deseja continuar?")
                     if resposta:
-                        # Reexecuta o app como administrador
-                        try:
-                            ctypes.windll.shell32.ShellExecuteW(
-                                None, "runas", sys.executable, f'"{sys.argv[0]}"', None, 1
-                            )
-                        except:
-                            messagebox.showerror("Erro", "Falha ao tentar obter permissões elevadas.")
+                        ctypes.windll.shell32.ShellExecuteW(
+                            None, "runas", sys.executable, f'"{sys.argv[0]}"', None, 1
+                        )
                     sys.exit()
 
-                sucesso = atualizar_projeto()
+                if is_frozen():
+                    sucesso = atualizar_executavel()
+                else:
+                    sucesso = atualizar_codigo_fonte()
+
                 if sucesso:
-                    messagebox.showinfo("Atualizado", "Aplicativo atualizado. Reiniciando...")
-                    subprocess.Popen([sys.executable, sys.argv[0]])
+                    messagebox.showinfo("Atualizado", "Atualização concluída. O aplicativo será reiniciado.")
+                    subprocess.Popen([sys.executable])
                     sys.exit()
                 else:
-                    messagebox.showerror("Erro", "Erro ao atualizar os arquivos do projeto.")
+                    messagebox.showerror("Erro", "Erro durante a atualização.")
 
         elif mostrar_mensagem:
             messagebox.showinfo("Atualização", "Você já está com a versão mais recente.")
+
     except Exception as e:
         registrar_erro(e)
         if mostrar_mensagem:
-            messagebox.showerror("Erro", "Erro ao verificar atualização. Veja o log para mais detalhes.")
+            messagebox.showerror("Erro", "Erro ao verificar atualização. Veja o log para detalhes.")

@@ -21,13 +21,15 @@ rmdir /s /q build >nul 2>nul
 rmdir /s /q dist >nul 2>nul
 del /q "%NAME%.spec" >nul 2>nul
 
-REM Comando de compilação
+REM Comando de compilação com dependências extras
 pyinstaller ^
 --noconfirm ^
 --onefile ^
 --windowed ^
 --name "%NAME%" ^
 --icon "%ICON%" ^
+--hidden-import=lxml.etree ^
+--hidden-import=docx ^
 --add-data "assets;assets" ^
 "%MAIN%"
 

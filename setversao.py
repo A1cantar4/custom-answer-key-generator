@@ -2,12 +2,17 @@ import os
 import re
 import subprocess
 from pathlib import Path
+import zipfile
 
 # === CONFIGURAÇÕES ===
 VERSAO_PY = Path("core/versao.py")
 INSTALADOR_ISS = Path("instalador.iss")
 COMPILADOR_BAT = Path("compilador.bat")
+DIST_DIR = Path("dist")
 INNO_SETUP_PATH = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"  # Altere se necessário
+
+NOME_EXE = "GabaritoApp.exe"
+PASTA_RELEASES = Path("releases")
 
 # === UTILITÁRIOS ===
 
@@ -64,7 +69,22 @@ def compilar_instalador():
         print(f"[ERRO] Inno Setup não encontrado em: {INNO_SETUP_PATH}")
         print("Edite o caminho no script se estiver diferente.")
 
-# === EXECUÇÃO ===
+def criar_zip_release():
+    exe_path = DIST_DIR / NOME_EXE
+    if not exe_path.exists():
+        print("[ERRO] Executável não encontrado após compilação.")
+        return
+
+    # Cria pasta releases se não existir
+    PASTA_RELEASES.mkdir(exist_ok=True)
+
+    zip_name = PASTA_RELEASES / "GabaritoApp.zip"
+    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(exe_path, arcname=NOME_EXE)
+
+    print(f"[OK] Arquivo ZIP criado para release: {zip_name}")
+
+# === EXECUÇÃO PRINCIPAL ===
 
 def main():
     print("\n=== Atualizador de Versão do GabaritoApp ===\n")
@@ -90,6 +110,9 @@ def main():
 
     if input("Deseja compilar o instalador agora? (s/n): ").lower() == "s":
         compilar_instalador()
+
+    if input("Deseja gerar o .ZIP para release no GitHub? (s/n): ").lower() == "s":
+        criar_zip_release()
 
     print("\n=== Processo concluído ===\n")
 
