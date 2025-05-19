@@ -18,10 +18,10 @@ Uma aplicação com interface gráfica feita em Python para gerar sequências de
 
 ## 🖼️ Interface
 
-![screenshot](https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/assets/preview.png)
+![screenshot](https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/assets/preview.png)
 
 ---
-
+g
 ## 🚀 Como executar
 
 ### 1. Clonar o repositório
