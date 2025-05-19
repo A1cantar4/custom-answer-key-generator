@@ -268,8 +268,8 @@ class GabaritoApp:
             )
 
         instrucao += (
-            "\n📝 Exemplo:\n1. C\n2. A\n3. D\n=> A 1ª questão deve ter C como correta, a 2ª A, etc.\n"
-            "\n📌 Sequência de gabarito:\n"
+            "\n■ Exemplo:\n1. C\n2. A\n3. D\n=> A 1ª questão deve ter C como correta, a 2ª A, etc.\n"
+            "\n▶ Sequência de gabarito:\n"
             f"{gabarito_enumerado}\n"
         )
 
@@ -302,7 +302,7 @@ class GabaritoApp:
         if self.var_exportar_pdf.get():
             caminho_pdf = os.path.splitext(caminho)[0] + ".pdf"
             if os.path.exists(caminho_pdf):
-                mensagem_final += f"\n\n📄 PDF exportado como:\n{caminho_pdf}"
+                mensagem_final += f"\n\n✎ PDF exportado como:\n{caminho_pdf}"
 
         messagebox.showinfo("Sucesso", mensagem_final)
 
