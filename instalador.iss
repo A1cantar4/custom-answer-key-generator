@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=Gerador de Gabaritos Personalizados
-AppVersion=1.7.9
+AppVersion=1.7.10
 DefaultDirName={autopf}\GabaritoApp
 DefaultGroupName=GabaritoApp
 OutputBaseFilename=GabaritoInstaller
