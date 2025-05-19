@@ -12,7 +12,7 @@ import shutil
 from core.versao import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
 
 GITHUB_RAW_UPDATER_URL = (
-    "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/updater.py"
+    "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/atualizador.py"
 )
 GITHUB_ZIP_URL = ( 
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/archive/refs/heads/master.zip"
