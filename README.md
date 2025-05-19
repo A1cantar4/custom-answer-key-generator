@@ -1,3 +1,4 @@
+
 # 📝 Gerador de Gabaritos Personalizados
 
 Uma aplicação com interface gráfica feita em Python para gerar sequências de gabaritos balanceadas e exportá-las como `.txt` e `.pdf`, com suporte a customização, estilos de banca e importação de arquivos externos como DOCX e PDF.
@@ -21,27 +22,41 @@ Uma aplicação com interface gráfica feita em Python para gerar sequências de
 ![screenshot](https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/assets/preview.png)
 
 ---
-g
+
 ## 🚀 Como executar
 
 ### 1. Clonar o repositório
 
+```bash
 git clone https://github.com/A1cantar4/gerador-de-gabaritos-personalizados.git
-
 cd gerador-de-gabaritos-personalizados
+```
 
 ### 2. Instalar dependências
 
-Você pode usar pip:
+Você pode usar `pip`:
+
+```bash
 pip install -r requirements.txt
+```
 
 Ou instalar manualmente:
+
+```bash
 pip install ttkbootstrap python-docx PyPDF2 reportlab Pillow requests
+```
 
 ### 3. Executar o programa
+
+```bash
 python main.py
+```
+
+---
 
 ## 📁 Estrutura do Projeto
+
+```
 gerador-de-gabaritos-personalizados/
 │
 ├── core/
@@ -60,30 +75,46 @@ gerador-de-gabaritos-personalizados/
 │
 ├── assets/
 │   ├── icon.ico
-│   ├── preview.png
 │   └── background.png
 │
 ├── user_config.json       # Configurações salvas do usuário
 ├── requirements.txt       # Dependências do projeto
 ├── main.py                # Arquivo principal de execução
 └── README.md              # Este arquivo
+```
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
-Python 3.8+
-Tkinter + ttkbootstrap — interface gráfica moderna
-ReportLab — geração de PDFs
-python-docx / PyPDF2 — leitura de arquivos
-Pillow — imagens no app
-Requests — atualizações automáticas
 
-## 🧪 Testado em Windows 10/11
-Python 3.10+
+- **Python 3.8+**
+- **Tkinter + ttkbootstrap** — interface gráfica moderna
+- **ReportLab** — geração de PDFs
+- **python-docx / PyPDF2** — leitura de arquivos
+- **Pillow** — imagens no app
+- **Requests** — atualizações automáticas
+
+---
+
+## 🧪 Testado em
+
+- Windows 10/11
+- Python 3.10+
+
+---
 
 ## 🗂️ Licença
-Este projeto está licenciado sob a MIT License.
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
+
+---
 
 ## 🤝 Contribuição
-Pull requests são bem-vindos! Para grandes mudanças, abra uma issue primeiro para discutir o que você gostaria de modificar.
+
+Pull requests são bem-vindos! Para grandes mudanças, abra uma *issue* primeiro para discutir o que você gostaria de modificar.
+
+---
 
 ## 👨‍💻 Autor
-Desenvolvido por A1cantar4 com 💙
+
+Desenvolvido por [A1cantar4](https://github.com/A1cantar4) com 💙
