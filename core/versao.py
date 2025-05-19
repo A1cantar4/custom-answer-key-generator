@@ -1,4 +1,4 @@
-VERSAO_ATUAL = "1.7.0" # <--- Mudar sempre ao Atualizar
+VERSAO_ATUAL = "1.7.1" # <--- Mudar sempre ao Atualizar
 
 # C.entena D.ezena U.nidade
 # C = REFORMULAÇÃO TOTAL DO APLICATIVO (INCLUI INTERFACE, METODO DE USO, NOVOS MODOS, ALGO INOVADOR EM SI)

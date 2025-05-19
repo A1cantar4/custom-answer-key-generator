@@ -60,21 +60,23 @@ python main.py
 gerador-de-gabaritos-personalizados/
 │
 ├── core/
-│   ├── generator.py       # Geração do gabarito balanceado
-│   ├── reader.py          # Leitura de arquivos DOCX e PDF
+│   ├── gerador.py         # Geração do gabarito balanceado
+│   ├── leitor.py          # Leitura de arquivos DOCX e PDF
 │   ├── exportador.py      # Exportação para PDF com ReportLab
-│   ├── updater.py         # Sistema de atualização automática
-│   ├── settings.py        # Gerenciamento de configurações do usuário
-│   └── version.py         # Versão atual da aplicação
+│   ├── atualizador.py     # Sistema de atualização automática
+│   ├── configuracoes.py   # Gerenciamento de configurações do usuário
+│   └── versao.py          # Versão atual da aplicação
 │
 ├── ui/
-│   ├── main_window.py     # Classe principal da interface
-│   ├── styles.py          # Estilo visual (cores, fontes, bordas)
-│   ├── widgets.py         # Criação dos campos e opções da UI
-│   └── handlers.py        # Lógica dos botões (salvar, importar, etc.)
+│   ├── layout.py          # Classe principal da interface
+│   ├── estilo.py          # Estilo visual (cores, fontes, bordas)
+│   ├── entrada.py         # Criação dos campos e opções da UI
+│   └── funcoes.py         # Lógica dos botões (salvar, importar, etc.)
 │
 ├── assets/
 │   ├── icon.ico
+│   ├── preview.png
+│   ├── DejaVuSans.ttf     # Fonte dos arquivos
 │   └── background.png
 │
 ├── user_config.json       # Configurações salvas do usuário

@@ -5,12 +5,12 @@ from PIL import Image, ImageTk
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 
-from core.version import VERSAO_ATUAL
-from core.settings import load_config
-from core.updater import verificar_e_atualizar
-from ui.styles import aplicar_estilos
-from ui.widgets import criar_campos_texto, criar_opcoes_alternativas, criar_checkbuttons
-from ui.handlers import importar_arquivo, salvar_gabarito
+from core.versao import VERSAO_ATUAL
+from core.configuracoes import load_config
+from core.atualizador import verificar_e_atualizar
+from ui.estilo import aplicar_estilos
+from ui.entrada import criar_campos_texto, criar_opcoes_alternativas, criar_checkbuttons
+from ui.funcoes import importar_arquivo, salvar_gabarito
 
 
 def resource_path(relative_path):
@@ -122,6 +122,6 @@ class GabaritoApp:
 
             messagebox.showinfo("Configuração carregada", "A última configuração foi restaurada com sucesso.")
         except Exception as e:
-            from core.updater import registrar_erro
+            from core.atualizador import registrar_erro
             registrar_erro(e)
             messagebox.showerror("Erro", "Erro ao tentar restaurar a última configuração.")

@@ -2,7 +2,7 @@
 
 # Como está tudo "linkado" no Layout.py, então importar é o essencial
 from ttkbootstrap import Window
-from ui.main_window import GabaritoApp
+from ui.layout import GabaritoApp
 
 
 THEME_NAME = "flatly"  # Nome do tema principal

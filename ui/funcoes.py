@@ -3,11 +3,11 @@ import re
 import webbrowser
 from tkinter import filedialog, messagebox
 
-from core.generator import gerar_gabarito_balanceado
-from core.reader import extrair_texto_docx, extrair_texto_pdf
+from core.gerador import gerar_gabarito_balanceado
+from core.leitor import extrair_texto_docx, extrair_texto_pdf
 from core.exportador import salvar_pdf
-from core.settings import save_config
-from core.updater import registrar_erro
+from core.configuracoes import save_config
+from core.atualizador import registrar_erro
 
 
 def importar_arquivo(app):
@@ -58,7 +58,7 @@ def salvar_gabarito(app):
     }[alternativas]
 
     nome_base = f"{assunto}_{banca}" if app.var_nome_personalizado.get() else "gabarito"
-    nome_base = re.sub(r'[^a-zA-Z0-9_\\- ]', '', nome_base).strip().replace(" ", "_")
+    nome_base = re.sub(r'[^\w\- ]', '', nome_base).strip().replace(" ", "_")
     nome_arquivo = f"{nome_base}.txt"
 
     pasta = os.path.abspath(".") if app.var_mesma_pasta.get() else filedialog.askdirectory()

@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
-from core.generator import gerar_gabarito_balanceado
+from core.gerador import gerar_gabarito_balanceado
 
 
 class TestGerarGabaritoBalanceado(unittest.TestCase):

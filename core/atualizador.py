@@ -9,7 +9,7 @@ import zipfile
 import io
 import shutil
 
-from core.version import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
+from core.versao import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
 
 GITHUB_RAW_UPDATER_URL = (
     "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/updater.py"
