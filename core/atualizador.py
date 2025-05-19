@@ -8,6 +8,7 @@ import re
 import zipfile
 import io
 import shutil
+import tempfile
 
 from core.versao import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
 
@@ -35,7 +36,7 @@ def atualizar_projeto(): # usar método de Zipar RAW e extrair
             return False
 
         with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
-            temp_folder = "temp_update"
+            temp_folder = tempfile.mkdtemp()         
             zip_ref.extractall(temp_folder)
 
             extraido = os.path.join(temp_folder, "gerador-de-gabaritos-personalizados-master")
