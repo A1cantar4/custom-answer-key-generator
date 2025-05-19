@@ -8,7 +8,7 @@ from ttkbootstrap.constants import *
 from core.versao import VERSAO_ATUAL
 from core.configuracoes import load_config
 from core.atualizador import verificar_e_atualizar
-from ui.estilo import aplicar_estilos
+from ui.estilos import aplicar_estilos
 from ui.entrada import criar_campos_texto, criar_opcoes_alternativas, criar_checkbuttons
 from ui.funcoes import importar_arquivo, salvar_gabarito
 
