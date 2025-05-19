@@ -10,38 +10,47 @@ import io
 import shutil
 import tempfile
 
-from core.versao import VERSAO_ATUAL  # Puxar versão atual (lembrar de dar update)
+from core.versao import VERSAO_ATUAL  # Atual versão do app
 
 GITHUB_RAW_UPDATER_URL = (
     "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/versao.py"
 )
-GITHUB_ZIP_URL = ( 
+GITHUB_ZIP_URL = (
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/archive/refs/heads/master.zip"
 )
+
+# Arquivos que não devem ser sobrescritos durante a atualização
+IGNORAR_ARQUIVOS = ["config.json", "log_erro.txt", "__pycache__"]
 
 def registrar_erro(e):
     erro = traceback.format_exc()
     with open("log_erro.txt", "a", encoding="utf-8") as f:
         f.write(erro + "\n")
-    messagebox.showerror("Erro", f"Ocorreu um erro:\n{str(e)}")
+    messagebox.showerror("Erro", f"Ocorreu um erro:\n{type(e).__name__}: {e}")
 
 def extrair_versao(codigo_remoto):
     match = re.search(r'VERSAO_ATUAL\s*=\s*[\'"](.+?)[\'"]', codigo_remoto)
     return match.group(1) if match else None
 
-def atualizar_projeto(): # usar método de Zipar RAW e extrair
+def atualizar_projeto():
     try:
         response = requests.get(GITHUB_ZIP_URL)
         if response.status_code != 200:
-            return False
+            raise Exception("Não foi possível baixar o arquivo ZIP do GitHub.")
+
+        if not zipfile.is_zipfile(io.BytesIO(response.content)):
+            raise Exception("O arquivo ZIP recebido está corrompido ou inválido.")
 
         with zipfile.ZipFile(io.BytesIO(response.content)) as zip_ref:
-            temp_folder = tempfile.mkdtemp()         
+            temp_folder = tempfile.mkdtemp()
             zip_ref.extractall(temp_folder)
 
             extraido = os.path.join(temp_folder, "gerador-de-gabaritos-personalizados-master")
 
             for item in os.listdir(extraido):
+                if item in IGNORAR_ARQUIVOS:
+                    continue
+
                 src = os.path.join(extraido, item)
                 dest = os.path.join(".", item)
 
@@ -56,13 +65,21 @@ def atualizar_projeto(): # usar método de Zipar RAW e extrair
                 else:
                     shutil.copytree(src, dest)
 
+            # Salvar versão anterior para referência
+            try:
+                with open("versao_antiga.txt", "w", encoding="utf-8") as f:
+                    f.write(VERSAO_ATUAL)
+            except Exception as e:
+                registrar_erro(e)
+
             shutil.rmtree(temp_folder)
             return True
+
     except Exception as e:
         registrar_erro(e)
         return False
 
-def verificar_e_atualizar(mostrar_mensagem=False): # Pop-up Funcionando corretamente
+def verificar_e_atualizar(mostrar_mensagem=False):
     try:
         r = requests.get(GITHUB_RAW_UPDATER_URL)
         if r.status_code != 200:

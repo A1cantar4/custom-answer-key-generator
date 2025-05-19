@@ -7,9 +7,21 @@ from pathlib import Path
 VERSAO_PY = Path("core/versao.py")
 INSTALADOR_ISS = Path("instalador.iss")
 COMPILADOR_BAT = Path("compilador.bat")
-INNO_SETUP_PATH = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"  # ajuste se necessário
+INNO_SETUP_PATH = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"  # Altere se necessário
 
 # === UTILITÁRIOS ===
+
+def extrair_versao_atual():
+    if not VERSAO_PY.exists():
+        print("[ERRO] core/versao.py não encontrado.")
+        return None
+    with open(VERSAO_PY, "r", encoding="utf-8") as f:
+        for linha in f:
+            match = re.match(r'VERSAO_ATUAL\s*=\s*[\'"](.+?)[\'"]', linha)
+            if match:
+                return match.group(1)
+    print("[ERRO] VERSAO_ATUAL não encontrada no versao.py.")
+    return None
 
 def atualizar_versao_py(nova_versao: str):
     with open(VERSAO_PY, "r", encoding="utf-8") as f:
@@ -23,6 +35,10 @@ def atualizar_versao_py(nova_versao: str):
                 f.write(linha)
 
 def atualizar_instalador_iss(nova_versao: str):
+    if not INSTALADOR_ISS.exists():
+        print("[ERRO] instalador.iss não encontrado.")
+        return
+
     with open(INSTALADOR_ISS, "r", encoding="utf-8") as f:
         linhas = f.readlines()
 
@@ -30,6 +46,8 @@ def atualizar_instalador_iss(nova_versao: str):
         for linha in linhas:
             if linha.strip().lower().startswith("appversion="):
                 f.write(f"AppVersion={nova_versao}\n")
+            elif linha.strip().lower().startswith("setupiconfile="):
+                f.write('SetupIconFile=assets\\icon.ico\n')
             else:
                 f.write(linha)
 
@@ -50,25 +68,27 @@ def compilar_instalador():
 
 def main():
     print("\n=== Atualizador de Versão do GabaritoApp ===\n")
-    nova_versao = input("Digite a nova versão (ex: 1.7.8): ").strip()
+    nova_versao = input("Digite a nova versão (ex: 1.7.9): ").strip()
 
     if not re.match(r"^\d+\.\d+\.\d+$", nova_versao):
-        print("[ERRO] Formato de versão inválido.")
+        print("[ERRO] Formato de versão inválido. Use o formato X.Y.Z")
         return
 
-    if not VERSAO_PY.exists() or not INSTALADOR_ISS.exists():
-        print("[ERRO] Arquivos versao.py ou instalador.iss não encontrados.")
+    versao_antiga = extrair_versao_atual()
+    if not versao_antiga:
         return
+
+    print(f"\n→ Atualizando da versão {versao_antiga} para {nova_versao}...\n")
 
     atualizar_versao_py(nova_versao)
     atualizar_instalador_iss(nova_versao)
 
-    print(f"\n[OK] Versão atualizada para {nova_versao} com sucesso.")
+    print(f"[OK] Versão atualizada com sucesso para {nova_versao}.\n")
 
-    if input("\nDeseja compilar o EXE agora? (s/n): ").lower() == "s":
+    if input("Deseja compilar o EXE agora? (s/n): ").lower() == "s":
         compilar_exe()
 
-    if input("\nDeseja compilar o instalador agora? (s/n): ").lower() == "s":
+    if input("Deseja compilar o instalador agora? (s/n): ").lower() == "s":
         compilar_instalador()
 
     print("\n=== Processo concluído ===\n")
