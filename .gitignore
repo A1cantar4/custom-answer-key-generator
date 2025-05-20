@@ -5,7 +5,7 @@ __pycache__/
 
 # Diretórios de cache do PyInstaller ou build
 build/
-dist/
+#dist/
 *.spec
 
 # Arquivos temporários do sistema

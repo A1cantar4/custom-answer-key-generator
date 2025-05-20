@@ -110,6 +110,7 @@ def salvar_gabarito(app):
         "- NUNCA mencione ou repita a sequência no enunciado, apenas se solicitado.\n"
         "- NUNCA sublinhe, indique, ou coloque em negrito as alternativas corretas.\n"
         "- Gere 5 questões por vez.\n"
+        "- Após confirmação do usuário em gerar mais questões, mantenha o SIGILO. \n"
     )
 
     if "português" in assunto.lower() or "português" in materia.lower():
