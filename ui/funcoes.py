@@ -12,16 +12,36 @@ from core.atualizador import registrar_erro
 
 def importar_arquivo(app):
     caminhos = filedialog.askopenfilenames(filetypes=[("Documentos", "*.pdf *.docx")])
-    app.arquivos_importados = list(caminhos)
+    arquivos_validos = []
+    arquivos_invalidos = []
 
-    if app.arquivos_importados:
-        nomes = [os.path.basename(p) for p in app.arquivos_importados]
-        texto = "Arquivos: " + ", ".join(nomes)
-        app.label_arquivos.config(text=texto, foreground="black")
-        app.entry_assunto.delete(0, 'end')
-        app.entry_assunto.insert(0, "[extraído dos arquivos anexados]")
-    else:
+    for caminho in caminhos:
+        try:
+            if caminho.lower().endswith(".docx"):
+                _ = extrair_texto_docx(caminho)
+            elif caminho.lower().endswith(".pdf"):
+                _ = extrair_texto_pdf(caminho)
+            arquivos_validos.append(caminho)
+        except Exception as e:
+            registrar_erro(e)
+            arquivos_invalidos.append(os.path.basename(caminho))
+
+    if arquivos_invalidos:
+        messagebox.showwarning(
+            "Erro ao importar",
+            "Os seguintes arquivos não puderam ser lidos:\n" + "\n".join(arquivos_invalidos)
+        )
+
+    if not arquivos_validos:
         app.label_arquivos.config(text="Nenhum arquivo anexado", foreground="gray")
+        return
+
+    app.arquivos_importados = arquivos_validos
+    nomes = [os.path.basename(p) for p in arquivos_validos]
+    texto = "Arquivos: " + ", ".join(nomes)
+    app.label_arquivos.config(text=texto, foreground="black")
+    app.entry_assunto.delete(0, 'end')
+    app.entry_assunto.insert(0, "[extraído dos arquivos anexados]")
 
 
 def salvar_gabarito(app):

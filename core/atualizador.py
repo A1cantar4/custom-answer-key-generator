@@ -113,7 +113,9 @@ def criar_e_executar_reiniciador():
     nome_atual = os.path.basename(sys.executable)
     bat_conteudo = f"""@echo off
 timeout /t 2 >nul
-del antigo_backup.exe >nul 2>nul
+if exist "{nome_atual}" (
+    ren "{nome_atual}" antigo_backup.exe
+)
 move /Y novo_temp.exe "{nome_atual}" >nul
 start "" "{nome_atual}"
 exit
@@ -142,7 +144,6 @@ def atualizar_executavel():
             else:
                 raise Exception("Executável não encontrado no ZIP.")
 
-        os.rename(sys.executable, "antigo_backup.exe")
         criar_e_executar_reiniciador()
         return True
 
