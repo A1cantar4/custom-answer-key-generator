@@ -9,21 +9,17 @@ import io
 import shutil
 import tempfile
 import ctypes
+import time
 from tkinter import messagebox
-
 from core.versao import VERSAO_ATUAL
 
 # URLs
 GITHUB_RAW_VERSAO_URL = (
     "https://raw.githubusercontent.com/A1cantar4/gerador-de-gabaritos-personalizados/refs/heads/master/core/versao.py"
 )
-
-# Para modo .py
 GITHUB_ZIP_SOURCE_URL = (
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/archive/refs/heads/master.zip"
 )
-
-# Para modo .exe
 GITHUB_ZIP_EXE_URL = (
     "https://github.com/A1cantar4/gerador-de-gabaritos-personalizados/releases/latest/download/GabaritoApp.zip"
 )
@@ -33,7 +29,7 @@ IGNORAR_ARQUIVOS = [
     "config.json", "log_erro.txt", "__pycache__", ".gitignore", ".gitattributes", ".git", ".github"
 ]
 
-# === Funções utilitárias ===
+# === Utilitários ===
 
 def is_frozen():
     return getattr(sys, 'frozen', False)
@@ -60,7 +56,7 @@ def extrair_versao(codigo_remoto):
     match = re.search(r'VERSAO_ATUAL\s*=\s*[\'"](.+?)[\'"]', codigo_remoto)
     return match.group(1) if match else None
 
-# === Atualização modo .PY (desenvolvedor) ===
+# === Atualização modo .PY ===
 
 def atualizar_codigo_fonte():
     try:
@@ -111,7 +107,23 @@ def atualizar_codigo_fonte():
         registrar_erro(e)
         return False
 
-# === Atualização modo .EXE (usuário final) ===
+# === Atualização modo .EXE ===
+
+def criar_e_executar_reiniciador():
+    nome_atual = os.path.basename(sys.executable)
+    bat_conteudo = f"""@echo off
+timeout /t 2 >nul
+del antigo_backup.exe >nul 2>nul
+move /Y novo_temp.exe "{nome_atual}" >nul
+start "" "{nome_atual}"
+exit
+"""
+    try:
+        with open("reiniciador.bat", "w", encoding="utf-8") as f:
+            f.write(bat_conteudo)
+        subprocess.Popen(["cmd", "/c", "start", "reiniciador.bat"])
+    except Exception as e:
+        registrar_erro(e)
 
 def atualizar_executavel():
     try:
@@ -130,11 +142,8 @@ def atualizar_executavel():
             else:
                 raise Exception("Executável não encontrado no ZIP.")
 
-        nome_atual = os.path.basename(sys.executable)
-
-        os.rename(nome_atual, "antigo_backup.exe")
-        os.rename(exe_temp, nome_atual)
-
+        os.rename(sys.executable, "antigo_backup.exe")
+        criar_e_executar_reiniciador()
         return True
 
     except Exception as e:
@@ -164,14 +173,12 @@ def verificar_e_atualizar(mostrar_mensagem=False):
                         )
                     sys.exit()
 
-                if is_frozen():
-                    sucesso = atualizar_executavel()
-                else:
-                    sucesso = atualizar_codigo_fonte()
+                sucesso = atualizar_executavel() if is_frozen() else atualizar_codigo_fonte()
 
                 if sucesso:
                     messagebox.showinfo("Atualizado", "Atualização concluída. O aplicativo será reiniciado.")
-                    subprocess.Popen([sys.executable])
+                    if not is_frozen():
+                        subprocess.Popen([sys.executable, os.path.abspath(sys.argv[0])])
                     sys.exit()
                 else:
                     messagebox.showerror("Erro", "Erro durante a atualização.")
