@@ -127,7 +127,7 @@ def salvar_gabarito(app):
         f"{instrucoes_especificas.get(modo, '')}\n"
         f"- Cada questão deve ter {len(letras)} alternativas ({', '.join(letras)}), com apenas UMA correta.\n"
         "- A posição da alternativa correta DEVE SEGUIR EXATAMENTE a ordem da lista abaixo.\n"
-        "- NUNCA mencione ou repita a sequência no enunciado, apenas se solicitado.\n"
+        "- NUNCA mencione o gabarito, apenas se solicitado.\n"
         "- NUNCA sublinhe, indique, ou coloque em negrito as alternativas corretas.\n"
         "- Gere 5 questões por vez.\n"
         "- Após confirmação do usuário em gerar mais questões, mantenha o SIGILO. \n"

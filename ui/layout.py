@@ -25,7 +25,7 @@ class GabaritoApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Gerador de Gabaritos Personalizados")
-        self.root.geometry("700x700")
+        self.root.geometry("800x800")
         self.root.resizable(False, False)
 
         # Ícone da janela
@@ -36,7 +36,7 @@ class GabaritoApp:
 
         # Background com imagem
         try:
-            bg_image = Image.open(resource_path("assets/background.png")).resize((700, 700))
+            bg_image = Image.open(resource_path("assets/background.png")).resize((800, 800))
             self.background_image = ImageTk.PhotoImage(bg_image)
             bg_label = ttk.Label(self.root, image=self.background_image)
             bg_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -97,7 +97,7 @@ class GabaritoApp:
 
         # Botão discreto para reabrir configuração
         ttk.Button(self.root, text="↺ Reabrir última Configuração", bootstyle="link", command=self.reabrir_ultima_config)\
-            .place(x=430, y=594)
+            .place(x=490, y=674)
 
     def reabrir_ultima_config(self):
         try:
