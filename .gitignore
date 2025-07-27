@@ -1,32 +1,19 @@
-# Ignorar caches e arquivos temporários
 __pycache__/
 *.pyc
 *.pyo
-
-# Diretórios de cache do PyInstaller ou build
 build/
-#dist/
+dist/
+Output/
+releases/
 *.spec
-
-# Arquivos temporários do sistema
 .DS_Store
 Thumbs.db
-
-# Configurações do VSCode
 .vscode/
-
-# Ambientes virtuais
 venv/
 .env/
 .env.bak
-
-# Arquivos de log
 *.log
 log_erro.txt
-
-# Arquivo de configurações salvas
 user_config.json
-
-# PDFs e TXT gerados automaticamente
 *.pdf
 *.txt

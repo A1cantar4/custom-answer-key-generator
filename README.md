@@ -60,6 +60,7 @@ python main.py
 gerador-de-gabaritos-personalizados/
 │
 ├── core/
+│   ├── __init__.py        # Vazio
 │   ├── gerador.py         # Geração do gabarito balanceado
 │   ├── leitor.py          # Leitura de arquivos DOCX e PDF
 │   ├── exportador.py      # Exportação para PDF com ReportLab
@@ -67,7 +68,13 @@ gerador-de-gabaritos-personalizados/
 │   ├── configuracoes.py   # Gerenciamento de configurações do usuário
 │   └── versao.py          # Versão atual da aplicação
 │
+├── tests/
+│   ├── test_generator.py  # Testes da lógica do gabarito
+│   └── __init__.py        # Vazio
+│
+│
 ├── ui/
+│   ├── __init__.py        # Vazio
 │   ├── layout.py          # Classe principal da interface
 │   ├── estilo.py          # Estilo visual (cores, fontes, bordas)
 │   ├── entrada.py         # Criação dos campos e opções da UI
@@ -82,6 +89,9 @@ gerador-de-gabaritos-personalizados/
 ├── user_config.json       # Configurações salvas do usuário
 ├── requirements.txt       # Dependências do projeto
 ├── main.py                # Arquivo principal de execução
+├── compilador.bat         # Compila os arquivos (Caso não queira alterar a versão)
+├── setversao.py           # Modifica a versão do App e Roda o Compilador
+├── instalador.iss         # Script do INNO Setup
 └── README.md              # Este arquivo
 ```
 
